@@ -1,0 +1,24 @@
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+Copyright and Project Attribution
+Modified Project: OpenCut DSA
+Additional Modifications and Contributions Copyright (C) 2026 SUBARC
+Original Project: Stick-It-To-Cricut
+Original Author: EdaDyckATpmDOTme
+Original Copyright (C) 2026 Stick-it-too-Cricut Contributors
+Original Project Repository:
+https://github.com/EdaDyckATpmDOTme/Stick-It-To-Cricut
+License Notice
+OpenCut DSA is a substantially modified and expanded derivative of Stick-It-To-Cricut, originally created by EdaDyckATpmDOTme.
+The original application has been renamed, extensively redesigned, and expanded with substantial additional functionality, improvements, and modifications.
+OpenCut DSA acknowledges and credits the original author and preserves the applicable copyright notices and licensing obligations of the original project.
+This project incorporates code from the original application and is distributed under the GNU Affero General Public License version 3, or (at your option) any later version (AGPL-3.0-or-later).
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+You should have received a copy of the GNU Affero General Public License along with this program. If not, see:
+https://www.gnu.org/licenses/
+Full License Text
+The complete GNU Affero General Public License version 3 applies to this project.
+The full license text is available at:
+https://www.gnu.org/licenses/agpl-3.0.txt
+OpenCut DSA is distributed under AGPL-3.0-or-later.

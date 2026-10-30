@@ -1,0 +1,16 @@
+{
+  "name": "opencut-dsa",
+  "version": "6.6.0",
+  "private": true,
+  "description": "OpenCut DSA: single-file cutting-design editor (design space alternative) with SVG export, fonts, swatches, bucket, magic wand",
+  "scripts": {
+    "build": "python3 tools/patch_core.py && node tools/build.js",
+    "test:unit": "node --test tests/unit.test.js tests/textpaths.unit.test.js tests/maskops.unit.test.js",
+    "test:browser": "node --test tests/browser.test.js tests/fonts.browser.test.js tests/undo.browser.test.js tests/mat.browser.test.js tests/swatch.browser.test.js",
+    "test": "node --test tests/*.test.js",
+    "swatches": "node tools/make-swatches.js"
+  },
+  "devDependencies": {
+    "playwright": "1.56.0"
+  }
+}
