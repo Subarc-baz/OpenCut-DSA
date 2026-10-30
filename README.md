@@ -5,6 +5,7 @@ An open-source, browser-based cutting design studio with advanced text editing, 
 ## Read this first: what v6 can and cannot do
 
 > **v6 cannot cut on a real Maker 3.** No public, verified protocol for sending cut jobs to a stock Maker 3 exists (see `docs/RESEARCH.md`), and this app will not send guessed data to a machine. What it **does** do with real hardware: let you pick a USB/serial device in the browser and **read its descriptors** (vendor/product ID, interfaces, endpoints). It claims no interface and writes nothing. A **Simulator** exercises the whole cut workflow in software and is labelled SIMULATION everywhere. Nothing moves.
+> I AM CURRENTLY WORKING ON MAKING THIS WORK FOR THE EXPLORE 2 AND 3. ITS POSSIBLE IT WILL WORK WITH MAKER 2 AND 3 AS WELL BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS THE USB AND BLUETOOTH PROTOCOL, SO ITS NOT EASY TO FIND THE CORRECT SENDS FOR THE INDIVIDUAL CUT COMMANDS. 
 
 ## Run it
 
