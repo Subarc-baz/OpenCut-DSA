@@ -151,6 +151,17 @@ rep("ctx.save();ctx.translate(panX,panY);ctx.scale(zoom,zoom);\n  ctx.fillStyle=
 rep("    menu.appendChild(cmSep());\n    menu.appendChild(cmBtn('Zoom to Fit',zoomFit,'Ctrl+0'));",
     "    if(window.WandTool&&WandTool.hasSelection())menu.appendChild(cmBtn('Deselect wand selection',WandTool.deselect,'Esc'));\n    menu.appendChild(cmSep());\n    menu.appendChild(cmBtn('Zoom to Fit',zoomFit,'Ctrl+0'));")
 
+# 10k. v6.7: PNG canvas mode (transparent checkerboard, orange boundary, PNG export at chosen DPI, no autosave over the mat)
+rep("var ec=document.createElement('canvas');ec.width=matW*2;ec.height=matH*2;\n  var ex=ec.getContext('2d');ex.scale(2,2);\n  ex.fillStyle=matColor;ex.fillRect(0,0,matW,matH);",
+    "var __k=window.__pngMode?window.__pngDpi/96:2;var ec=document.createElement('canvas');ec.width=Math.round(matW*__k);ec.height=Math.round(matH*__k);\n  var ex=ec.getContext('2d');ex.scale(ec.width/matW,ec.height/matH);\n  if(!window.__pngMode){ex.fillStyle=matColor;ex.fillRect(0,0,matW,matH);}")
+rep("a.download='design.png'", "a.download=window.__pngMode?'canvas.png':'design.png'")
+rep("ctx.restore();\n  ctx.fillStyle=matColor;ctx.fillRect(0,0,matW,matH);\n  if(gridOn){",
+    "ctx.restore();\n  if(window.__pngMode&&window.__paintChecker)window.__paintChecker(ctx);else{ctx.fillStyle=matColor;ctx.fillRect(0,0,matW,matH);}\n  if(gridOn){")
+rep("ctx.strokeStyle='#44ff66';ctx.lineWidth=2;ctx.setLineDash([8,4]);ctx.strokeRect(0,0,matW,matH);",
+    "ctx.strokeStyle=window.__pngMode?'#ff9f1c':'#44ff66';ctx.lineWidth=window.__pngMode?3:2;ctx.setLineDash([8,4]);ctx.strokeRect(0,0,matW,matH);")
+rep("      var data=JSON.stringify({objects:JSON.parse(snapshotObjects()),nextId:nextId,ts:Date.now()});",
+    "      if(window.__pngMode)return;\n      var data=JSON.stringify({objects:JSON.parse(snapshotObjects()),nextId:nextId,ts:Date.now()});")
+
 # 11. machine layer markers + title
 rep('</script>\n</body>', '</script>\n<!--@@MACHINE@@-->\n</body>')
 rep('<title>Stick-it-too-Cricut — RICKET MAKER C-137</title>', '<title>OpenCut DSA</title>')

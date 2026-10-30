@@ -54,3 +54,8 @@ See "What would unblock real cutting" in `RESEARCH.md`: capture the official sof
 * Filling part of a plain shape (rectangle, ellipse, star, polygon, text object) cannot split it; use **Fill in new layer**, or convert text first. Pieces are decided by majority (> 50 %) coverage.
 * Filling a selection on an **image** recolours pixels with a single colour (a swatch uses its average colour, not the tiled pattern).
 * Filling creates one new object per partly selected path; the selection itself is kept so you can fill again.
+
+## v6.7
+* PNG canvases live only in the open page: they are **not** saved in project files or autosave (export the PNG, or keep the tab open). Reloading the page closes them.
+* Very large canvases are refused (over 16000 px a side or 100 megapixels), because browsers cannot allocate them.
+* Cutting and the machine panel work on the mat only.

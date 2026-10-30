@@ -63,3 +63,8 @@ Text tool, text effects, game, donate dialog, materials list, minimap, webcam/QR
 * `src/layers-panel.js` (new): floating `#lpanel`, wraps `refreshLayers`.
 * Deselect: `#wb-clear`, Esc in any tool, Ctrl+Shift+A, empty-canvas mousedown with the Select tool, context-menu item (patch step 10j).
 * Tests: `tests/v66.browser.test.js` (8), `splitPieces` unit test; two v6.5 tests updated because palette/bucket painting no longer adds a layer.
+
+# v6.7
+* `src/png-canvas.js` (new): document tabs. `docs[0]` is the mat; each PNG canvas is another entry. The active document lives in the app globals (`objects`, `matW`, `matH`, `undoStack`, `redoStack`, zoom/pan); inactive ones are parked. `clipboard`, `nextId` are global, so copy/paste crosses tabs. Size is stored in design px (96/in); dpi only affects export.
+* Patch step 10k (`tools/patch_core.py`): `draw()` paints a checkerboard instead of the mat colour and an orange boundary in PNG mode; `exportPNG` uses `dpi/96` scale and no background fill in PNG mode (mat export unchanged, 2x); autosave is skipped in PNG mode.
+* Limits: each side <= 16000 px and <= 100 MP (browser canvas limits). Tests: `tests/v67.browser.test.js` (5).

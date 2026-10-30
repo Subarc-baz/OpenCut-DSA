@@ -15,7 +15,8 @@ Environment: cloud Linux container, Node 22.22.0, Playwright 1.56.0, headless **
 | `tests/swatch.browser.test.js` (library, in-app loading, folder input, bucket, wand incl. letters/counters/converted text/overlaps, branding/removals) | **22 / 22 passed** |
 | `tests/v65.browser.test.js` (selection persistence, painting a selection, mode buttons, font folder/messages, theme) | **7 / 7 passed** |
 | `tests/v66.browser.test.js` (fill changes the object, T split, whole object, refusal, new-layer button, image pixels, deselect routes, Layers panel, per-letter convert) | **8 / 8 passed** |
-| **Total** | **134 / 134** |
+| `tests/v67.browser.test.js` (PNG canvas: size/dpi/validation, checkerboard + boundary + bar, tabs, copy/paste across tabs, several canvases, resize/close, transparent export of exact size, mat unchanged) | **5 / 5 passed** |
+| **Total** | **139 / 139** |
 | Syntax check (`node --check`) of every JS file, plus parse of all 4 inline `<script>` blocks in `index.html` | passed |
 | Packaged copy: ZIP extracted to an empty directory and the full suite re-run there | passed (see the final message for the run) |
 

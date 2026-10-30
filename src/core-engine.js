@@ -144,6 +144,7 @@ function pasteClipboard(){
     if(o.gid){if(!gmap[o.gid])gmap[o.gid]=base++;o.gid=gmap[o.gid];}
     objects.push(o);
   });
+  (function(){var b=unionBounds(copies.map(objBounds));if(b&&(b.x+b.w/2<0||b.y+b.h/2<0||b.x+b.w/2>matW||b.y+b.h/2>matH)){var dx=matW/2-(b.x+b.w/2),dy=matH/2-(b.y+b.h/2);copies.forEach(function(o){translateObj(o,dx,dy);});}})();   /* pasted into a different-sized canvas: land in the middle */
   clipboard=cloneList(copies);       /* successive pastes cascade */
   selectMany(copies.map(function(o){return o.id;}));
 }
