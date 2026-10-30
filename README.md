@@ -1,18 +1,16 @@
 # OpenCut DSA v6.7
 
-A single-file, in-browser cutting-design editor (your v4 app) with fixed canvas interaction, real multi-select / grouping / resizing, and a hardware layer for the **Cricut Maker 3 over USB**.
+A replacement for Cricut Design Space. Read below
 
 ## Read this first: what v6 can and cannot do
 
-> 
-
-> **v6 cannot cut on a real Maker 3.** No public, verified protocol for sending cut jobs to a stock Maker 3 exists (see `docs/RESEARCH.md`), and this app will not send guessed data to a machine. What it **does** do with real hardware: let you pick a USB/serial device in the browser and **read its descriptors** (vendor/product ID, interfaces, endpoints). It claims no interface and writes nothing. A **Simulator** exercises the whole cut workflow in software and is labelled SIMULATION everywhere. Nothing moves. 
+> **v6 cannot cut on a real Maker 3 or any other cricut atm.** No public, verified protocol for sending cut jobs to a stock Maker 3 exists (see `docs/RESEARCH.md`), and this app will not send guessed data to a machine. What it **does** do with real hardware: let you pick a USB/serial device in the browser and **read its descriptors** (vendor/product ID, interfaces, endpoints). It claims no interface and writes nothing. A **Simulator** exercises the whole cut workflow in software and is labelled SIMULATION everywhere. Nothing moves.
 
 **I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS USB AND BLUTOOTH PROTOCOLS SO ITS BEEN DIFFICULT**
 
 ## Run it
 
-`index.html` is self-contained. 
+`index.html` is self-contained.
 
 Double click INDEX.html and BOOM, you’re good to go.
 
