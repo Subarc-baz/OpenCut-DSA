@@ -10,8 +10,7 @@ A single-file, in-browser cutting-design editor (your v4 app) with fixed canvas 
 
 `index.html` is self-contained. Either:
 
-- open it directly in Brave/Chrome/Chromium (`file://` works for the editor), or
-- serve it locally, which is the safest context for WebUSB: `./tools/serve.sh` then open `http://localhost:8080/`.
+- Double click the INDEX.HTML and BOOM you're good.
 
 No install, no dependencies, no network access, no telemetry.
 
