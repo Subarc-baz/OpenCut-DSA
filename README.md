@@ -16,6 +16,16 @@ Double click INDEX.html and BOOM, you’re good to go.
 
 No install, no dependencies, no network access, no telemetry.
 
+## New in v6.7
+
+- **Blank PNG canvas.** Click **PNG** in the header, enter the width and height in **inches**, pick a **resolution (dpi)** or a preset (4x4, 6x4, 5x7, 8.5x11, 12x12) and Create. It opens in its own **tab** next to the mat (tabs appear at the top-left of the canvas); you can open several. The background is always **transparent**, shown as a checkerboard, and the boundary is an **orange dashed frame** plus an orange **PNG CANVAS** bar showing size in inches, exported pixel size and dpi, with **Resize...**, **Export PNG** and **Back to mat**.
+- **Copy and paste between tabs.** Copy on any tab (mat or PNG canvas), click another tab, paste (same clipboard, groups are kept). Each tab keeps its own objects, zoom and undo history. All tools (wand, bucket, text, layers...) work on a PNG canvas.
+- **Export PNG** on a PNG canvas gives exactly width x dpi by height x dpi pixels with a transparent background (`canvas.png`). The mat's own PNG export (`design.png`) is unchanged. PNG canvases are not auto-saved over your mat design and are not cut (cutting belongs to the mat); closing a tab with the x asks first if it has objects.
+
+## 
+
+## 
+
 ## New in v6
 
 - **SVG export** (Export button or **Ctrl+Shift+E**; Ctrl+E is still a quick PNG). Real vector output, 96 units = 1 inch, size in in / mm / px, optional crop-to-design and selected-objects-only. Right-click also offers "Export SVG...". Rectangles, ellipses, stars, polygons, lines, text and converted shapes are exported; raster images are embedded as images.
@@ -29,11 +39,7 @@ No install, no dependencies, no network access, no telemetry.
 - **Undo / Redo buttons** in the header (v4 only had Ctrl+Z / Ctrl+Y, with no visible control). They grey out when there is nothing to undo or redo. **Ctrl+Shift+Z** also redoes. Undo keeps up to 80 steps.
 - Not verified on real Brave/Bazzite: the Local Font Access API (only tested against a mock; see `docs/LIMITATIONS.md`). If it is unavailable, use **Add font file(s)**; fonts on Bazzite are usually in `~/.local/share/fonts` or `/usr/share/fonts`.
 
-## New in v6.7
-
-- **Blank PNG canvas.** Click **PNG** in the header, enter the width and height in **inches**, pick a **resolution (dpi)** or a preset (4x4, 6x4, 5x7, 8.5x11, 12x12) and Create. It opens in its own **tab** next to the mat (tabs appear at the top-left of the canvas); you can open several. The background is always **transparent**, shown as a checkerboard, and the boundary is an **orange dashed frame** plus an orange **PNG CANVAS** bar showing size in inches, exported pixel size and dpi, with **Resize...**, **Export PNG** and **Back to mat**.
-- **Copy and paste between tabs.** Copy on any tab (mat or PNG canvas), click another tab, paste (same clipboard, groups are kept). Each tab keeps its own objects, zoom and undo history. All tools (wand, bucket, text, layers...) work on a PNG canvas.
-- **Export PNG** on a PNG canvas gives exactly width x dpi by height x dpi pixels with a transparent background (`canvas.png`). The mat's own PNG export (`design.png`) is unchanged. PNG canvases are not auto-saved over your mat design and are not cut (cutting belongs to the mat); closing a tab with the x asks first if it has objects.
+## 
 
 ## New in v6.6
 
