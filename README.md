@@ -1,6 +1,6 @@
 # OpenCut DSA v6.6
 
-A single-file, in-browser cutting-design editor (your v4 app) with fixed canvas interaction, real multi-select / grouping / resizing, and a hardware layer for the **Cricut Maker 3 over USB**.
+An open-source, browser-based cutting design studio with advanced text editing, font tools, layer management, SVG export, image manipulation, swatches, and an expanding set of creative tools. Built as an extensively expanded and redesigned alternative to Cricut Design Space.
 
 ## Read this first: what v6 can and cannot do
 
