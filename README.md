@@ -1,30 +1,21 @@
-# OpenCut DSA v6.7
+# **OpenCut DSA v6.8**
 
-A replacement for Cricut Design Space. Read below
+# **Read this first: what v6 can and cannot do**
 
-## Read this first: what v6 can and cannot do
+<a id="user-content-read-this-first-what-v6-can-and-cannot-do"></a>
 
-> **v6 cannot cut on a real Maker 3 or any other cricut atm.** No public, verified protocol for sending cut jobs to a stock Maker 3 exists (see `docs/RESEARCH.md`), and this app will not send guessed data to a machine. What it **does** do with real hardware: let you pick a USB/serial device in the browser and **read its descriptors** (vendor/product ID, interfaces, endpoints). It claims no interface and writes nothing. A **Simulator** exercises the whole cut workflow in software and is labelled SIMULATION everywhere. Nothing moves.
+**v6 cannot cut on a real Maker 3 or any other cricut atm.** No public, verified protocol for sending cut jobs to a stock Maker 3 exists (see `docs/RESEARCH.md`), and this app will not send guessed data to a machine. What it **does** do with real hardware: let you pick a USB/serial device in the browser and **read its descriptors** (vendor/product ID, interfaces, endpoints). It claims no interface and writes nothing. A **Simulator** exercises the whole cut workflow in software and is labelled SIMULATION everywhere. Nothing moves.
 
 **I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS USB AND BLUTOOTH PROTOCOLS SO ITS BEEN DIFFICULT**
 
-## Run it
+# New in v6.8
 
-`index.html` is self-contained.
+- **Wand copy:** with a wand selection active (and the Wand tool, or nothing else selected), **Ctrl+C / right-click Copy** copies only the selected pixels, as a picture that is transparent outside the selection. Paste (Ctrl+V) it on any tab. It copies what you see (all visible objects flattened), at 2x resolution. With no wand selection, Copy works as before.
+- **Text resize keeps the font.** Dragging the corner handle of a text object used to reset it to bold sans-serif (a bug inherited from v4); it now keeps family, bold and italic and rounds the size.
+- **Only real fonts are listed.** The built-in entries (Sans-serif, Arial, Serif, Georgia, Monospace, Courier New, Cursive, Impact) had no font file behind them, which is why converting them said to pick a font. The Font dropdowns now list only fonts you loaded (**Fonts...**: system fonts, files or a folder); with none loaded they show "No fonts yet - click Fonts...". Text already in an old generic font keeps showing as "(current)".
+- **New text is black** (unless you picked a Fill colour; the Fill picker's own default stays green for shapes). Black is hard to see on the dark mat, so use the Mat button to lighten the mat.
 
-Double click INDEX.html and BOOM, you’re good to go.
-
-No install, no dependencies, no network access, no telemetry.
-
-## New in v6.7
-
-- **Blank PNG canvas.** Click **PNG** in the header, enter the width and height in **inches**, pick a **resolution (dpi)** or a preset (4x4, 6x4, 5x7, 8.5x11, 12x12) and Create. It opens in its own **tab** next to the mat (tabs appear at the top-left of the canvas); you can open several. The background is always **transparent**, shown as a checkerboard, and the boundary is an **orange dashed frame** plus an orange **PNG CANVAS** bar showing size in inches, exported pixel size and dpi, with **Resize...**, **Export PNG** and **Back to mat**.
-- **Copy and paste between tabs.** Copy on any tab (mat or PNG canvas), click another tab, paste (same clipboard, groups are kept). Each tab keeps its own objects, zoom and undo history. All tools (wand, bucket, text, layers...) work on a PNG canvas.
-- **Export PNG** on a PNG canvas gives exactly width x dpi by height x dpi pixels with a transparent background (`canvas.png`). The mat's own PNG export (`design.png`) is unchanged. PNG canvases are not auto-saved over your mat design and are not cut (cutting belongs to the mat); closing a tab with the x asks first if it has objects.
-
-## 
-
-## 
+# A replacement for Cricut Design Space. Read below
 
 ## New in v6
 
@@ -40,6 +31,12 @@ No install, no dependencies, no network access, no telemetry.
 - Not verified on real Brave/Bazzite: the Local Font Access API (only tested against a mock; see `docs/LIMITATIONS.md`). If it is unavailable, use **Add font file(s)**; fonts on Bazzite are usually in `~/.local/share/fonts` or `/usr/share/fonts`.
 
 ## 
+
+## New in v6.7
+
+- **Blank PNG canvas.** Click **PNG** in the header, enter the width and height in **inches**, pick a **resolution (dpi)** or a preset (4x4, 6x4, 5x7, 8.5x11, 12x12) and Create. It opens in its own **tab** next to the mat (tabs appear at the top-left of the canvas); you can open several. The background is always **transparent**, shown as a checkerboard, and the boundary is an **orange dashed frame** plus an orange **PNG CANVAS** bar showing size in inches, exported pixel size and dpi, with **Resize...**, **Export PNG** and **Back to mat**.
+- **Copy and paste between tabs.** Copy on any tab (mat or PNG canvas), click another tab, paste (same clipboard, groups are kept). Each tab keeps its own objects, zoom and undo history. All tools (wand, bucket, text, layers...) work on a PNG canvas.
+- **Export PNG** on a PNG canvas gives exactly width x dpi by height x dpi pixels with a transparent background (`canvas.png`). The mat's own PNG export (`design.png`) is unchanged. PNG canvases are not auto-saved over your mat design and are not cut (cutting belongs to the mat); closing a tab with the x asks first if it has objects.
 
 ## New in v6.6
 
@@ -103,7 +100,7 @@ No install, no dependencies, no network access, no telemetry.
 ```
 npm install                       # installs Playwright (dev only)
 npx playwright install chromium   # or set CHROMIUM=/path/to/chrome
-npm test                          # 139 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5
+npm test                          # 143 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5 + 4
 # font tests need DejaVu fonts or FONT_TTF / FONT_BOLD_TTF=/path/to.ttf
 npm run build                     # rebuilds index.html from src/
 ```
