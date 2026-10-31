@@ -812,7 +812,7 @@ function onDown(e){
       for(var hi=0;hi<corners.length;hi++){
         if(Math.hypot(pt.x-corners[hi][0],pt.y-corners[hi][1])<=handleRadius){
           if(hi===3){
-            var fm=(sel.font||'bold 48px sans-serif').match(/^(.*?)(\\d+(?:\\.\\d+)?)px(.*)$/);
+            var fm=(sel.font||'bold 48px sans-serif').match(/^(.*?)(\d+(?:\.\d+)?)px(.*)$/);
             resizingText={obj:sel,startY:pt.y,startX:pt.x,startSize:fm?parseFloat(fm[2]):48,fontPrefix:fm?fm[1]:'bold ',fontSuffix:fm?fm[3]:' sans-serif',startFont:sel.font||'bold 48px sans-serif'};
             pushUndo();
             return;
@@ -830,7 +830,7 @@ function onDown(e){
   }
   if(tool==='text'){
     var txt=prompt('Enter text:');if(!txt)return;
-    pushUndo();objects.push({id:nextId++,type:'text',x:snap(pt.x),y:snap(pt.y),text:txt,fill:getFill(),font:'bold '+(+(document.getElementById('optFontSize')||{value:48}).value)+'px '+(document.getElementById('optFont')||{value:'sans-serif'}).value,name:'Text: '+txt.slice(0,15),w:0,h:52,curve:0,warp:'none',stroke:'none',strokeW:0,alpha:1});
+    pushUndo();objects.push({id:nextId++,type:'text',x:snap(pt.x),y:snap(pt.y),text:txt,fill:(function(){var f=getFill();return f==='#44ff66'?'#000000':f;})(),font:'bold '+(+(document.getElementById('optFontSize')||{value:48}).value)+'px '+((document.getElementById('optFont')||{}).value||'sans-serif'),name:'Text: '+txt.slice(0,15),w:0,h:52,curve:0,warp:'none',stroke:'none',strokeW:0,alpha:1});
     refreshLayers();draw();setTool('select');return;
   }
   drawing=true;startX=snap(pt.x);startY=snap(pt.y);
@@ -844,7 +844,7 @@ function onMove(e){
     var ro=resizingText;
     var delta=Math.max(-ro.startSize+1,(pt.y-ro.startY));
     var newSize=Math.max(12,Math.min(500,ro.startSize+delta));
-    ro.obj.font=ro.fontPrefix+newSize+'px'+ro.fontSuffix;
+    ro.obj.font=ro.fontPrefix+Math.round(newSize)+'px'+ro.fontSuffix;
     draw();updateTransform();return;
   }
   if(resizeOp){doResize(pt,e);return;}
@@ -2742,14 +2742,19 @@ footer { background: var(--chrome); border-top-color: var(--chrome-line); color:
     [$('optFont'), $('stTextFont')].forEach(function (sel) {
       if (!sel) return;
       var prev = sel.value;
-      Array.prototype.slice.call(sel.querySelectorAll('optgroup[data-fl]')).forEach(function (g) { g.remove(); });
+      Array.prototype.slice.call(sel.querySelectorAll('optgroup[data-fl], option[data-ph]')).forEach(function (g) { g.remove(); });
+      /* v6.8: the built-in entries (Sans-serif, Arial, Serif, Georgia, Monospace, Courier New, Cursive, Impact) are only browser fallbacks with no font file behind them,
+         so text in them cannot be converted to shapes. Only fonts the app really has are listed. */
+      Array.prototype.slice.call(sel.children).forEach(function (n) { if (n.tagName === 'OPTION') n.remove(); });
       [['System fonts', 'system'], ['Added fonts', 'upload']].forEach(function (grp) {
         var fam = families(grp[1]); if (!fam.length) return;
         var og = document.createElement('optgroup'); og.label = grp[0] + ' (' + fam.length + ')'; og.setAttribute('data-fl', '1');
         fam.forEach(function (name) { var op = document.createElement('option'); op.value = TP.cssFamily(name); op.textContent = name; og.appendChild(op); });
         sel.appendChild(og);
       });
-      if (prev) sel.value = prev;
+      var usable = sel.querySelectorAll('optgroup[data-fl] option');
+      if (!usable.length) { var ph = document.createElement('option'); ph.value = ''; ph.disabled = true; ph.selected = true; ph.setAttribute('data-ph', '1'); ph.textContent = 'No fonts yet \u2013 click Fonts\u2026'; sel.insertBefore(ph, sel.firstChild); }
+      else { sel.value = prev; if (sel.selectedIndex < 0 || !sel.value) sel.selectedIndex = Array.prototype.indexOf.call(sel.options, usable[0]); }
     });
     document.dispatchEvent(new CustomEvent('fontlib:change'));
   }
@@ -3444,6 +3449,24 @@ footer { background: var(--chrome); border-top-color: var(--chrome-line); color:
     if (lx >= 0 && ly >= 0 && lx < S.w && ly < S.h && S.mask[ly * S.w + lx]) return fillSelection();
     toast('Click inside the selection to paint it, or press Esc to deselect and fill whole shapes.'); return true;
   }
+
+  /* ---------- Ctrl+C with a wand selection copies only the selected pixels (as a transparent picture) ---------- */
+  function copyRegion() {
+    if (!hasSelection()) return false;
+    var frame = { ox: S.ox, oy: S.oy, w: S.w / S.scale, h: S.h / S.scale }, r;
+    try { r = render(frame, objects); } catch (e) { toast('Could not read the design to copy it'); return false; }
+    if (r.w !== S.w || r.h !== S.h) return false;
+    var x0 = S.w, y0 = S.h, x1 = -1, y1 = -1, x, y;
+    for (y = 0; y < S.h; y++) for (x = 0; x < S.w; x++) if (S.mask[y * S.w + x]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return false;
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1, c = document.createElement('canvas'); c.width = cw; c.height = ch; var cx = c.getContext('2d'), id = cx.createImageData(cw, ch);
+    for (y = 0; y < ch; y++) for (x = 0; x < cw; x++) { var k = (y + y0) * S.w + (x + x0); if (!S.mask[k]) continue; var j = (y * cw + x) * 4, q = k * 4; id.data[j] = r.data[q]; id.data[j + 1] = r.data[q + 1]; id.data[j + 2] = r.data[q + 2]; id.data[j + 3] = r.data[q + 3]; }
+    cx.putImageData(id, 0, 0);
+    clipboard = [{ id: 0, type: 'image', src: c.toDataURL('image/png'), x: S.ox + x0 / S.scale, y: S.oy + y0 / S.scale, w: cw / S.scale, h: ch / S.scale, fill: 'none', stroke: 'none', strokeW: 0, alpha: 1, name: 'Wand selection' }];
+    toast('Copied the selected region only (' + cw + ' × ' + ch + ' px, transparent outside it). Paste with Ctrl+V.'); return true;
+  }
+  var _copy = copySelected;
+  copySelected = function () { if (S && (tool === 'wand' || !selIds.length) && copyRegion()) return; return _copy.apply(this, arguments); };
   window.WandTool = { deselect: clear, fillAsLayer: fillSelectionAsLayer, hasSelection: hasSelection, fillSelection: fillSelection, fillSelectionAsLayer: fillSelectionAsLayer, fillAt: fillAt, options: opt, state: function () { return S; }, count: count, loops: function () { return S && S.loops ? S.loops.length : 0; }, makeCutPath: makeCutPath, invert: invertSel, clear: clear, selectWhole: selectWhole, selectSubject: selectSubject };
 
   /* ---------- marching ants overlay ---------- */

@@ -68,3 +68,9 @@ Text tool, text effects, game, donate dialog, materials list, minimap, webcam/QR
 * `src/png-canvas.js` (new): document tabs. `docs[0]` is the mat; each PNG canvas is another entry. The active document lives in the app globals (`objects`, `matW`, `matH`, `undoStack`, `redoStack`, zoom/pan); inactive ones are parked. `clipboard`, `nextId` are global, so copy/paste crosses tabs. Size is stored in design px (96/in); dpi only affects export.
 * Patch step 10k (`tools/patch_core.py`): `draw()` paints a checkerboard instead of the mat colour and an orange boundary in PNG mode; `exportPNG` uses `dpi/96` scale and no background fill in PNG mode (mat export unchanged, 2x); autosave is skipped in PNG mode.
 * Limits: each side <= 16000 px and <= 100 MP (browser canvas limits). Tests: `tests/v67.browser.test.js` (5).
+
+# v6.8
+* `src/wand.js`: `copySelected` is wrapped; with a wand selection (and tool = wand, or no object selected) it renders the design in the selection frame, crops to the mask bounds, keeps the rendered RGBA only where the mask is set, and puts one `image` object in `clipboard`.
+* Patch step 10l: the text corner-resize regex had doubled backslashes in v4 (never matched, so the font fell back to `bold ... sans-serif`); fixed and the size is rounded. New text fill is `#000000` when the Fill picker still has its factory value `#44ff66`. Empty font value falls back to sans-serif.
+* `src/fonts.js` `refreshSelects`: removes the built-in `<option>`s from `#optFont` and `#stTextFont` and adds a disabled placeholder when no font is loaded; selects the first real font otherwise.
+* Tests: `tests/v68.browser.test.js` (4).

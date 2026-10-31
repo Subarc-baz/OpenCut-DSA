@@ -202,6 +202,24 @@
     if (lx >= 0 && ly >= 0 && lx < S.w && ly < S.h && S.mask[ly * S.w + lx]) return fillSelection();
     toast('Click inside the selection to paint it, or press Esc to deselect and fill whole shapes.'); return true;
   }
+
+  /* ---------- Ctrl+C with a wand selection copies only the selected pixels (as a transparent picture) ---------- */
+  function copyRegion() {
+    if (!hasSelection()) return false;
+    var frame = { ox: S.ox, oy: S.oy, w: S.w / S.scale, h: S.h / S.scale }, r;
+    try { r = render(frame, objects); } catch (e) { toast('Could not read the design to copy it'); return false; }
+    if (r.w !== S.w || r.h !== S.h) return false;
+    var x0 = S.w, y0 = S.h, x1 = -1, y1 = -1, x, y;
+    for (y = 0; y < S.h; y++) for (x = 0; x < S.w; x++) if (S.mask[y * S.w + x]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return false;
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1, c = document.createElement('canvas'); c.width = cw; c.height = ch; var cx = c.getContext('2d'), id = cx.createImageData(cw, ch);
+    for (y = 0; y < ch; y++) for (x = 0; x < cw; x++) { var k = (y + y0) * S.w + (x + x0); if (!S.mask[k]) continue; var j = (y * cw + x) * 4, q = k * 4; id.data[j] = r.data[q]; id.data[j + 1] = r.data[q + 1]; id.data[j + 2] = r.data[q + 2]; id.data[j + 3] = r.data[q + 3]; }
+    cx.putImageData(id, 0, 0);
+    clipboard = [{ id: 0, type: 'image', src: c.toDataURL('image/png'), x: S.ox + x0 / S.scale, y: S.oy + y0 / S.scale, w: cw / S.scale, h: ch / S.scale, fill: 'none', stroke: 'none', strokeW: 0, alpha: 1, name: 'Wand selection' }];
+    toast('Copied the selected region only (' + cw + ' × ' + ch + ' px, transparent outside it). Paste with Ctrl+V.'); return true;
+  }
+  var _copy = copySelected;
+  copySelected = function () { if (S && (tool === 'wand' || !selIds.length) && copyRegion()) return; return _copy.apply(this, arguments); };
   window.WandTool = { deselect: clear, fillAsLayer: fillSelectionAsLayer, hasSelection: hasSelection, fillSelection: fillSelection, fillSelectionAsLayer: fillSelectionAsLayer, fillAt: fillAt, options: opt, state: function () { return S; }, count: count, loops: function () { return S && S.loops ? S.loops.length : 0; }, makeCutPath: makeCutPath, invert: invertSel, clear: clear, selectWhole: selectWhole, selectSubject: selectSubject };
 
   /* ---------- marching ants overlay ---------- */

@@ -16,7 +16,8 @@ Environment: cloud Linux container, Node 22.22.0, Playwright 1.56.0, headless **
 | `tests/v65.browser.test.js` (selection persistence, painting a selection, mode buttons, font folder/messages, theme) | **7 / 7 passed** |
 | `tests/v66.browser.test.js` (fill changes the object, T split, whole object, refusal, new-layer button, image pixels, deselect routes, Layers panel, per-letter convert) | **8 / 8 passed** |
 | `tests/v67.browser.test.js` (PNG canvas: size/dpi/validation, checkerboard + boundary + bar, tabs, copy/paste across tabs, several canvases, resize/close, transparent export of exact size, mat unchanged) | **5 / 5 passed** |
-| **Total** | **139 / 139** |
+| `tests/v68.browser.test.js` (wand copy, text resize keeps font, real fonts only, black default text) | **4 / 4 passed** |
+| **Total** | **143 / 143** |
 | Syntax check (`node --check`) of every JS file, plus parse of all 4 inline `<script>` blocks in `index.html` | passed |
 | Packaged copy: ZIP extracted to an empty directory and the full suite re-run there | passed (see the final message for the run) |
 

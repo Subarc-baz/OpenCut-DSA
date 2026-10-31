@@ -59,3 +59,8 @@ See "What would unblock real cutting" in `RESEARCH.md`: capture the official sof
 * PNG canvases live only in the open page: they are **not** saved in project files or autosave (export the PNG, or keep the tab open). Reloading the page closes them.
 * Very large canvases are refused (over 16000 px a side or 100 megapixels), because browsers cannot allocate them.
 * Cutting and the machine panel work on the mat only.
+
+## v6.8
+* A wand copy is a **picture** (pixels), not cut outlines. For a cuttable shape use Make cut path.
+* With no fonts loaded, new text is drawn in the browser's default sans-serif and cannot be converted to shapes until a font is loaded (Fonts...).
+* If you deliberately want text in exactly #44ff66 (the factory green), pick it via another shade; that exact value is treated as "unchanged" and becomes black.

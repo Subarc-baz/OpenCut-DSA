@@ -202,14 +202,19 @@
     [$('optFont'), $('stTextFont')].forEach(function (sel) {
       if (!sel) return;
       var prev = sel.value;
-      Array.prototype.slice.call(sel.querySelectorAll('optgroup[data-fl]')).forEach(function (g) { g.remove(); });
+      Array.prototype.slice.call(sel.querySelectorAll('optgroup[data-fl], option[data-ph]')).forEach(function (g) { g.remove(); });
+      /* v6.8: the built-in entries (Sans-serif, Arial, Serif, Georgia, Monospace, Courier New, Cursive, Impact) are only browser fallbacks with no font file behind them,
+         so text in them cannot be converted to shapes. Only fonts the app really has are listed. */
+      Array.prototype.slice.call(sel.children).forEach(function (n) { if (n.tagName === 'OPTION') n.remove(); });
       [['System fonts', 'system'], ['Added fonts', 'upload']].forEach(function (grp) {
         var fam = families(grp[1]); if (!fam.length) return;
         var og = document.createElement('optgroup'); og.label = grp[0] + ' (' + fam.length + ')'; og.setAttribute('data-fl', '1');
         fam.forEach(function (name) { var op = document.createElement('option'); op.value = TP.cssFamily(name); op.textContent = name; og.appendChild(op); });
         sel.appendChild(og);
       });
-      if (prev) sel.value = prev;
+      var usable = sel.querySelectorAll('optgroup[data-fl] option');
+      if (!usable.length) { var ph = document.createElement('option'); ph.value = ''; ph.disabled = true; ph.selected = true; ph.setAttribute('data-ph', '1'); ph.textContent = 'No fonts yet \u2013 click Fonts\u2026'; sel.insertBefore(ph, sel.firstChild); }
+      else { sel.value = prev; if (sel.selectedIndex < 0 || !sel.value) sel.selectedIndex = Array.prototype.indexOf.call(sel.options, usable[0]); }
     });
     document.dispatchEvent(new CustomEvent('fontlib:change'));
   }

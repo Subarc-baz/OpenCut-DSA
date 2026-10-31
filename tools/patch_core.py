@@ -162,6 +162,15 @@ rep("ctx.strokeStyle='#44ff66';ctx.lineWidth=2;ctx.setLineDash([8,4]);ctx.stroke
 rep("      var data=JSON.stringify({objects:JSON.parse(snapshotObjects()),nextId:nextId,ts:Date.now()});",
     "      if(window.__pngMode)return;\n      var data=JSON.stringify({objects:JSON.parse(snapshotObjects()),nextId:nextId,ts:Date.now()});")
 
+# 10l. v6.8: text fixes
+#  - corner-drag font-size resize used a regex with doubled backslashes (never matched), so the font reset to "bold sans-serif"
+rep(r"match(/^(.*?)(\\d+(?:\\.\\d+)?)px(.*)$/)", r"match(/^(.*?)(\d+(?:\.\d+)?)px(.*)$/)")
+rep("ro.obj.font=ro.fontPrefix+newSize+'px'+ro.fontSuffix;", "ro.obj.font=ro.fontPrefix+Math.round(newSize)+'px'+ro.fontSuffix;")
+#  - new text is black unless a colour was actually picked (the Fill picker's factory colour is green, which is for shapes)
+rep("text:txt,fill:getFill(),font:'bold '", "text:txt,fill:(function(){var f=getFill();return f==='#44ff66'?'#000000':f;})(),font:'bold '")
+#  - no empty font value when no font is loaded yet
+rep("(document.getElementById('optFont')||{value:'sans-serif'}).value,name:'Text: '", "((document.getElementById('optFont')||{}).value||'sans-serif'),name:'Text: '")
+
 # 11. machine layer markers + title
 rep('</script>\n</body>', '</script>\n<!--@@MACHINE@@-->\n</body>')
 rep('<title>Stick-it-too-Cricut — RICKET MAKER C-137</title>', '<title>OpenCut DSA</title>')
