@@ -88,7 +88,7 @@
   }
 
   /* ---------- uploads ---------- */
-  function registerUpload(buf, filename, persist) {
+  function registerUpload(buf, filename, persist, bundled) {
     var font = parseBuffer(buf), nm = font.names || {};
     function pick(o) { return o ? (o.en || o[Object.keys(o)[0]]) : null; }
     var family = pick(nm.fontFamily) || String(filename || 'Uploaded font').replace(/\.[^.]+$/, ''), style = pick(nm.fontSubfamily) || 'Regular';
@@ -99,9 +99,10 @@
     var ff = new FontFace(family, buf.slice(0), { weight: String(bold ? Math.max(weight, 700) : Math.min(weight, 500)), style: italic ? 'italic' : 'normal' });
     return ff.load().then(function () {
       document.fonts.add(ff);
-      var face = { key: key, family: family, style: style, bold: bold, italic: italic, source: 'upload', buffer: buf, parsed: font, fontFace: ff, filename: filename };
+      var face = { key: key, family: family, style: style, bold: bold, italic: italic, source: 'upload', buffer: buf, parsed: font, fontFace: ff, filename: filename, bundled: !!bundled };
       faces.push(face);
-      if (persist !== false) dbPut({ key: key, family: family, style: style, bold: bold, italic: italic, filename: filename, buffer: buf });
+      if (persist !== false && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () { });   /* ask the browser not to evict remembered fonts */
+      if (persist !== false) dbPut({ key: key, family: family, style: style, bold: bold, italic: italic, filename: filename, buffer: buf }).then(function (ok) { if (!ok) state.storageFailed = true; });
       return face;
     });
   }
@@ -127,11 +128,38 @@
       return (recs || []).reduce(function (p, r) { return p.then(function () { return registerUpload(r.buffer, r.filename, false).catch(function () { }); }); }, Promise.resolve());
     }).then(function () {
       refreshSelects();
+      return loadBundle();
+    }).then(function () {
       var want = false; try { want = localStorage.getItem('sitc_sysfonts') === '1'; } catch (e) { }
       if (want && state.systemSupported && navigator.permissions && navigator.permissions.query) {
         return navigator.permissions.query({ name: 'local-fonts' }).then(function (st) { if (st.state === 'granted') return loadSystemFonts(); }).catch(function () { });
       }
     });
+  }
+
+  /* ---------- fonts folder bundle (works when index.html is simply double-clicked) ----------
+     A web page opened from a folder cannot list or read that folder, but it CAN load a script file that sits next to it (the Swatch Library does the same).
+     "Save fonts to app folder" writes fonts-bundle.js from the fonts you added; put it in the fonts folder next to index.html and they load every time,
+     whatever the browser does with its stored data. */
+  function b64ToBuf(b64) { var bin = atob(b64), n = bin.length, u = new Uint8Array(n); for (var i = 0; i < n; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+  function bufToB64(buf) { var u = new Uint8Array(buf), out = [], CH = 0x8000; for (var i = 0; i < u.length; i += CH) out.push(String.fromCharCode.apply(null, u.subarray(i, i + CH))); return btoa(out.join('')); }
+  function loadBundle() {
+    var list = window.FONT_BUNDLE; if (!list || !list.length) return Promise.resolve(0);
+    var n = 0;
+    return list.reduce(function (p, it) {
+      return p.then(function () { try { return registerUpload(b64ToBuf(it.d), it.n, false, true).then(function () { n++; }, function () { }); } catch (e) { } });
+    }, Promise.resolve()).then(function () { state.bundleCount = n; state.bundleTotal = list.length; refreshSelects(); return n; });
+  }
+  function saveBundle() {
+    var fs = faces.filter(function (f) { return f.source === 'upload' && f.buffer; });
+    if (!fs.length) return { ok: false, msg: 'Add some fonts first (Add font file(s) or Add font folder), then save them.' };
+    var total = fs.reduce(function (a, f) { return a + f.buffer.byteLength; }, 0);
+    if (total > 160 * 1024 * 1024) return { ok: false, msg: 'These fonts add up to ' + Math.round(total / 1048576) + ' MB, which is too much to load at every start. Remove some (limit about 160 MB) and try again.' };
+    var parts = ['/* OpenCut DSA fonts bundle. Put this file in the "fonts" folder next to index.html. Generated ' + new Date().toISOString() + ' */\nwindow.FONT_BUNDLE=['], seen = {};
+    fs.forEach(function (f) { var nm = f.filename || (f.family + '.ttf'); if (seen[f.key]) return; seen[f.key] = 1; parts.push(JSON.stringify({ n: nm, d: bufToB64(f.buffer) }) + ',\n'); });
+    parts.push('];\n');
+    var a = document.createElement('a'), url = URL.createObjectURL(new Blob(parts, { type: 'text/javascript' })); a.href = url; a.download = 'fonts-bundle.js'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    return { ok: true, n: Object.keys(seen).length, mb: Math.round(total / 104857.6) / 10 };
   }
 
   /* ---------- lookup / outlines ---------- */
@@ -232,6 +260,7 @@
     var row = el('div', 'display:flex;gap:8px;flex-wrap:wrap');
     var bSys = el('button', '', 'Load system fonts'); bSys.className = 'mbtn'; bSys.style.width = 'auto'; bSys.id = 'btnLoadSystemFonts';
     var bAdd = el('button', '', 'Add font file(s)…'); bAdd.className = 'mbtn'; bAdd.style.width = 'auto'; bAdd.id = 'btnAddFontFiles';
+    var bSave = el('button', '', 'Save fonts to app folder\u2026'); bSave.className = 'mbtn'; bSave.style.width = 'auto'; bSave.id = 'btnSaveFontBundle'; bSave.title = 'Creates fonts-bundle.js from the fonts you added. Put it in the fonts folder next to index.html and they load every time you open the app.';
     var bDir = el('button', '', 'Add font folder\u2026'); bDir.className = 'mbtn'; bDir.style.width = 'auto'; bDir.id = 'btnAddFontFolder'; bDir.title = 'Pick a folder of fonts (e.g. C:\\Windows\\Fonts); .ttf .otf .woff files are added';
     var dir = document.createElement('input'); dir.type = 'file'; dir.multiple = true; dir.setAttribute('webkitdirectory', ''); dir.style.display = 'none'; dir.id = 'fontFolderInput';
     var file = document.createElement('input'); file.type = 'file'; file.multiple = true; file.accept = '.ttf,.otf,.woff'; file.style.display = 'none'; file.id = 'fontFileInput';
@@ -239,29 +268,36 @@
     var list = el('div', 'overflow-y:auto;min-height:120px;max-height:40vh;border:1px solid var(--bdr);border-radius:8px;padding:6px'); list.id = 'fontList';
     var note = el('div', 'font-size:10.5px;line-height:1.5;color:var(--dim)', 'Installed fonts need your browser\'s permission (Chromium-based browsers only). Added fonts (.ttf .otf .woff) are stored in this browser. Text can only be converted to cut paths when the font file is available.');
     var close = el('button', '', 'Close'); close.className = 'mbtn'; close.style.width = 'auto'; close.style.alignSelf = 'flex-end';
-    row.appendChild(bSys); row.appendChild(bAdd); row.appendChild(bDir); row.appendChild(file); row.appendChild(dir);
+    row.appendChild(bSys); row.appendChild(bAdd); row.appendChild(bDir); row.appendChild(bSave); row.appendChild(file); row.appendChild(dir);
     [h, status, row, search, list, note, close].forEach(function (c) { box.appendChild(c); }); ov.appendChild(box); document.body.appendChild(ov);
 
     function say(msg, bad) { status.textContent = msg; status.style.color = bad ? 'var(--red)' : 'var(--dim)'; }
     function render() {
       var q = search.value.trim().toLowerCase(); list.textContent = '';
-      var rows = {}; faces.forEach(function (f) { var k = f.source + '|' + f.family; (rows[k] = rows[k] || { family: f.family, source: f.source, faces: [] }).faces.push(f); });
+      var rows = {}; faces.forEach(function (f) { var k = f.source + (f.bundled ? 'B' : '') + '|' + f.family; (rows[k] = rows[k] || { family: f.family, source: f.source, bundled: !!f.bundled, faces: [] }).faces.push(f); });
       var keys = Object.keys(rows).filter(function (k) { return !q || rows[k].family.toLowerCase().indexOf(q) >= 0; })
         .sort(function (a, b) { return rows[a].family.toLowerCase() < rows[b].family.toLowerCase() ? -1 : 1; }).slice(0, 400);
       if (!keys.length) list.appendChild(el('div', 'color:var(--dim);font-size:12px;padding:8px', faces.length ? 'No matching fonts.' : 'No extra fonts loaded yet.'));
       keys.forEach(function (k) {
         var r = rows[k], line = el('div', 'display:flex;align-items:center;gap:8px;padding:3px 4px');
         var nm = el('span', 'flex:1;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis', r.family); nm.style.fontFamily = TP.cssFamily(r.family); nm.title = r.family;
-        line.appendChild(nm); line.appendChild(el('span', 'font:10px var(--mono);color:var(--dim)', r.source === 'system' ? 'system · ' + r.faces.length : 'added · ' + r.faces.length));
-        if (r.source === 'upload') { var rm = el('button', 'padding:2px 8px', 'Remove'); rm.className = 'hbtn'; rm.onclick = function () { Promise.all(r.faces.map(removeFace)).then(function () { render(); say('Removed ' + r.family + '.'); }); }; line.appendChild(rm); }
+        line.appendChild(nm); line.appendChild(el('span', 'font:10px var(--mono);color:var(--dim)', r.source === 'system' ? 'system · ' + r.faces.length : (r.bundled ? 'fonts folder · ' : 'added · ') + r.faces.length));
+        if (r.source === 'upload' && !r.bundled) { var rm = el('button', 'padding:2px 8px', 'Remove'); rm.className = 'hbtn'; rm.onclick = function () { Promise.all(r.faces.map(removeFace)).then(function () { render(); say('Removed ' + r.family + '.'); }); }; line.appendChild(rm); }
         list.appendChild(line);
       });
     }
     function initialStatus() {
+      if (state.bundleCount) { say(state.bundleCount + ' font file(s) load automatically from the fonts folder (fonts-bundle.js).' + (state.systemSupported && !state.systemLoaded ? ' System fonts: click "Load system fonts" to add more.' : '')); bSys.disabled = false; return; }
       say(state.systemLoaded ? families('system').length + ' system font families loaded.' : state.systemSupported ? 'System fonts not loaded yet. Click "Load system fonts" and allow access when the browser asks.' : unsupportedMessage(), !state.systemSupported && !state.systemLoaded);
       bSys.disabled = false;
     }
     bSys.onclick = function () { say('Waiting for permission…'); loadSystemFonts().then(function (n) { say(n + ' system font families loaded. Pick them in any Font dropdown.'); render(); }, function (e) { say(e.message, true); }); };
+    bSave.onclick = function () {
+      say('Preparing fonts-bundle.js\u2026'); setTimeout(function () {
+        var r = saveBundle(); if (!r.ok) { say(r.msg, true); return; }
+        say('Saved fonts-bundle.js (' + r.n + ' font file(s), ' + r.mb + ' MB). Move it into the "fonts" folder next to index.html (replace the old one if there is one), then reopen the app. Those fonts will then load every time.');
+      }, 30);
+    };
     bAdd.onclick = function () { file.click(); };
     bDir.onclick = function () { dir.click(); };
     dir.onchange = function () {
@@ -270,10 +306,10 @@
       if (!ok.length) { say('No usable fonts in that folder (need .ttf, .otf or .woff; .ttc collections and .woff2 are not supported).', true); return; }
       say('Adding ' + ok.length + ' fonts\u2026 0/' + ok.length);
       addFiles(ok, function (n, t) { say('Adding fonts\u2026 ' + n + '/' + t); }).then(function (r) {
-        render(); say('Added ' + r.added.length + ' font file(s)' + (skipped ? '; ' + skipped + ' other file(s) ignored (.ttc, .woff2, etc.)' : '') + (capped ? '; stopped at 300 fonts' : '') + '. ' + r.errors.slice(0, 3).join(' ') + (r.errors.length > 3 ? ' (+' + (r.errors.length - 3) + ' more problems)' : ''), r.errors.length > 0 && !r.added.length);
+        render(); setTimeout(function () { if (state.storageFailed) say('Your browser would not store these fonts, so they will be gone next time. Click "Save fonts to app folder\u2026" and put the file in the fonts folder to keep them.', true); }, 600); say('Added ' + r.added.length + ' font file(s)' + (skipped ? '; ' + skipped + ' other file(s) ignored (.ttc, .woff2, etc.)' : '') + (capped ? '; stopped at 300 fonts' : '') + '. ' + r.errors.slice(0, 3).join(' ') + (r.errors.length > 3 ? ' (+' + (r.errors.length - 3) + ' more problems)' : ''), r.errors.length > 0 && !r.added.length);
       });
     };
-    file.onchange = function () { addFiles(file.files).then(function (r) { render(); say((r.added.length ? 'Added ' + r.added.length + ' font file(s). ' : '') + r.errors.join(' '), r.errors.length > 0 && !r.added.length); file.value = ''; }); };
+    file.onchange = function () { addFiles(file.files).then(function (r) { render(); setTimeout(function () { if (state.storageFailed) say('Your browser would not store these fonts, so they will be gone next time. Click "Save fonts to app folder\u2026" and put the file in the fonts folder to keep them.', true); }, 600); say((r.added.length ? 'Added ' + r.added.length + ' font file(s). ' : '') + r.errors.join(' '), r.errors.length > 0 && !r.added.length); file.value = ''; }); };
     search.oninput = render;
     function shut() { ov.remove(); document.removeEventListener('keydown', onKey, true); }
     function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); shut(); } }
@@ -306,6 +342,6 @@
   }
   addButtons(); refreshSelects(); restore();
 
-  window.FontLib = { faces: function () { return faces; }, state: state, loadSystemFonts: loadSystemFonts, addFiles: addFiles, removeFace: removeFace, outlineText: outlineText, findFace: findFace,
+  window.FontLib = { saveBundle: saveBundle, loadBundle: loadBundle, faces: function () { return faces; }, state: state, loadSystemFonts: loadSystemFonts, addFiles: addFiles, removeFace: removeFace, outlineText: outlineText, findFace: findFace,
     ensureParsed: ensureParsed, families: families, openDialog: openDialog, restore: restore, convertSelectedTextToShapes: convertSelectedTextToShapes, FontError: FontError };
 })();

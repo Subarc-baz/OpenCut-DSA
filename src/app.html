@@ -926,6 +926,7 @@ function updateToolOpts(t){
     menu.appendChild(cmBtn('Toggle Grid',function(){gridOn=!gridOn;draw();toast('Grid '+(gridOn?'on':'off'));},'G'));
     menu.appendChild(cmBtn('Export PNG',exportPNG,'Ctrl+E'));
     menu.appendChild(cmBtn('Export SVG\u2026',function(){openExportDialog('svg');},'Ctrl+Shift+E'));
+    menu.appendChild(cmBtn('Print\u2026',function(){if(window.PrintSheet)PrintSheet.open();},'Ctrl+P'));
     menu.style.display='block';
     menu.style.left=Math.min(e.clientX,window.innerWidth-200)+'px';
     menu.style.top=Math.min(e.clientY,window.innerHeight-300)+'px';

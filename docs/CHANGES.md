@@ -74,3 +74,17 @@ Text tool, text effects, game, donate dialog, materials list, minimap, webcam/QR
 * Patch step 10l: the text corner-resize regex had doubled backslashes in v4 (never matched, so the font fell back to `bold ... sans-serif`); fixed and the size is rounded. New text fill is `#000000` when the Fill picker still has its factory value `#44ff66`. Empty font value falls back to sans-serif.
 * `src/fonts.js` `refreshSelects`: removes the built-in `<option>`s from `#optFont` and `#stTextFont` and adds a disabled placeholder when no font is loaded; selects the first real font otherwise.
 * Tests: `tests/v68.browser.test.js` (4).
+
+# README
+* `README.md` keeps your intro wording, a version history (newest first, one section per version) and the reference sections. Each build adds a new version section at the top of the history and updates the title, test count and layout.
+
+# v6.9
+* `wand.js fillSelection`: ownership now uses alpha > 128, selected pixels no object owns are "empty space"; if they are >= 15 % of the selection (or nothing else is selected) a path `Filled empty area` is built from them (dilated 1 px, no corner smoothing) and inserted at the bottom of the stack with the chosen colour/pattern. Thin anti-aliased rims (< 15 %) and images with fewer than 8 selected pixels are ignored. Cause of the reported bug: an image was always "planned" for recolouring even when only its faint edge pixels were selected, so the toast said it changed the fill but nothing visible changed.
+* `fonts.js`: `navigator.storage.persist()` after adding a font. Tests: `tests/v69.browser.test.js` (3).
+* v6.9 fonts: `fonts/fonts-bundle.js` (loaded by a `<script src onerror>` tag added in `tools/build.js`, like `swatches/swatches.js`) sets `window.FONT_BUNDLE=[{n,d(base64)}]`; `FontLib.loadBundle()` registers each (marked `bundled`, not removable); `FontLib.saveBundle()` writes it from the uploaded faces (limit ~160 MB). `state.storageFailed` is set when IndexedDB refuses a write. Tested in a fresh profile from a copied folder (`tests/v69fonts.browser.test.js`).
+* Findings behind that design (Chromium 141): a page opened from file:// cannot fetch or list a sibling folder (fetch, XHR and directory listing all fail), but can load a sibling script; over http a directory listing works; IndexedDB fonts survived restarts and folder moves in Chromium.
+
+# v6.10
+* `src/print.js` (new): Print sheet dialog. Items = visible objects (or the selection); a sticker = one object or one group (`gid`). Layout in inches (paper, margin, scale %, shrink, centre, cut-line pad). Cut lines: each sticker is rendered alone at 150 dpi (`WandTool.drawObjects`), alpha > 8 -> mask, optional hole fill (flood from the border), square dilation by the offset, `MaskOps.maskToPaths` (smoothed), mapped to page inches. The page is drawn once at 300 dpi; printing writes it as one `<img>` sized in inches with `@page{size;margin:0}` into a hidden iframe and calls `print()`. `cutSvg` writes the same loops (96 units = 1 in).
+* Entry points: Ctrl+P (capture handler), context-menu item (patch step 10m), Print button in the Export window. `WandTool.drawObjects` is now exposed. `tests/v610.browser.test.js` (4) checks layout, pixels, cut loops, SVG, that the print page is a one-page letter PDF (Chromium `page.pdf`), and the entry points. No printer was used.
+* Research used: Design Space's Print Then Cut maximum sizes (Letter: about 7.44 x 9.94 in) and Flatten behaviour (see the discussion; Flatten is not implemented).

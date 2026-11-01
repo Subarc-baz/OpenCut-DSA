@@ -171,6 +171,10 @@ rep("text:txt,fill:getFill(),font:'bold '", "text:txt,fill:(function(){var f=get
 #  - no empty font value when no font is loaded yet
 rep("(document.getElementById('optFont')||{value:'sans-serif'}).value,name:'Text: '", "((document.getElementById('optFont')||{}).value||'sans-serif'),name:'Text: '")
 
+# 10m. v6.10: "Print..." (print sheet with cut lines) in the right-click menu, next to the export items
+rep("menu.appendChild(cmBtn('Export SVG\\u2026',function(){openExportDialog('svg');},'Ctrl+Shift+E'));",
+    "menu.appendChild(cmBtn('Export SVG\\u2026',function(){openExportDialog('svg');},'Ctrl+Shift+E'));\n    menu.appendChild(cmBtn('Print\\u2026',function(){if(window.PrintSheet)PrintSheet.open();},'Ctrl+P'));")
+
 # 11. machine layer markers + title
 rep('</script>\n</body>', '</script>\n<!--@@MACHINE@@-->\n</body>')
 rep('<title>Stick-it-too-Cricut — RICKET MAKER C-137</title>', '<title>OpenCut DSA</title>')

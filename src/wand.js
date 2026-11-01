@@ -149,12 +149,18 @@
       for (i = objects.length - 1; i >= 0; i--) {
         var o = objects[i]; if (o.hidden || o.type === 'line') continue;
         var r = render(frame, [Object.assign({}, o, { alpha: 1 })]); if (r.w !== S.w || r.h !== S.h) { toast('Could not match the selection to the design; use "Fill in new layer".'); return true; }
-        var ad = r.data; alphas[i] = ad; for (k = 0; k < N; k++) if (owned[k] < 0 && ad[k * 4 + 3] > 8) owned[k] = i;
+        var ad = r.data; alphas[i] = ad; for (k = 0; k < N; k++) if (owned[k] < 0 && ad[k * 4 + 3] > 128) owned[k] = i;
       }
     } catch (e) { toast('Could not read the design; use "Fill in new layer".'); return true; }
-    var selN = {}, totN = {}; for (k = 0; k < N; k++) { var w = owned[k]; if (w < 0) continue; totN[w] = (totN[w] || 0) + 1; if (S.mask[k]) selN[w] = (selN[w] || 0) + 1; }
+    var selN = {}, totN = {}, emptyN = 0, selTotal = 0, em = new Uint8Array(N);
+    for (k = 0; k < N; k++) { var w = owned[k]; if (S.mask[k]) { selTotal++; if (w < 0) { em[k] = 1; emptyN++; } } if (w < 0) continue; totN[w] = (totN[w] || 0) + 1; if (S.mask[k]) selN[w] = (selN[w] || 0) + 1; }
+    /* Selected pixels that no object covers are EMPTY SPACE (transparent canvas, bare mat). There is nothing there to recolour, so filling them
+       creates a new shape behind the objects. Thin anti-aliased rims around a selected object are not treated as empty space. */
+    var fillEmpty = emptyN >= 16 && (emptyN >= 0.15 * selTotal || !Object.keys(selN).length);
+    if (!fillEmpty) Object.keys(selN).forEach(function (q) { if (selN[q] < 8) delete selN[q]; });
     var targets = Object.keys(selN).map(Number).sort(function (a, b) { return b - a; });   /* high index first so splice inserts keep lower indexes valid */
-    if (!targets.length) { toast('The selection is empty space. Use "Fill in new layer" to paint it, or select part of an object.'); return true; }
+    if (fillEmpty) Object.keys(selN).forEach(function (q) { if (selN[q] < 8) targets.splice(targets.indexOf(+q), 1); });
+    if (!targets.length && !fillEmpty) { toast('Nothing under the selection to fill. Use "Fill in new layer" to paint it anyway.'); return true; }
     var plan = [], refused = 0, locked = 0;
     targets.forEach(function (idx) {
       var o = objects[idx], frac = selN[idx] / totN[idx];
@@ -171,7 +177,7 @@
       if (!chosen.length) { refused++; return; }
       plan.push({ idx: idx, whole: !rest.length, chosen: chosen, rest: rest });
     });
-    if (!plan.length) { toast(refused ? 'That part is not a separate piece of the object. Use "Fill in new layer", or convert the text with "One object per letter".' : 'The selected object is locked.'); return true; }
+    if (!plan.length && !fillEmpty) { toast(refused ? 'That part is not a separate piece of the object. Use "Fill in new layer", or convert the text with "One object per letter".' : 'The selected object is locked.'); return true; }
     pushUndo(); var painted = 0, split = 0;
     plan.forEach(function (p) {
       var o = objects[p.idx];
@@ -182,7 +188,13 @@
       var part = Object.assign({}, JSON.parse(JSON.stringify(o)), gPart, { id: nextId++, name: (o.name || 'Shape') + ' (part)' }); putStyle(part, t);
       Object.assign(o, gRest); objects.splice(p.idx + 1, 0, part); painted++; split++;
     });
+    var emptyDone = false;
+    if (fillEmpty) {
+      var dm = MO.dilate(em, S.w, S.h, 1), el = MO.maskToPaths(dm, S.w, S.h, { eps: 1, smooth: false, minArea: 4 })   /* no corner rounding: edges of the canvas must stay square */, eg = el && el.length && TP.makePathGeometry(el.map(function (L) { return { points: L.map(function (p) { return [S.ox + p[0] / S.scale, S.oy + p[1] / S.scale]; }), closed: true }; }));
+      if (eg) { var eo = { id: nextId++, type: 'path', name: 'Filled empty area', fill: '#888888', stroke: 'none', strokeW: 0, alpha: 1 }; Object.assign(eo, eg); putStyle(eo, t); objects.unshift(eo); emptyDone = true; }
+    }
     S.key = sigAll(); refreshLayers(); draw(); refreshOpts();
+    if (emptyDone) { toast(painted ? 'Filled ' + painted + ' object' + (painted === 1 ? '' : 's') + ' and the empty space (a new shape behind them)' : 'Filled the empty space with a new shape behind your objects (there was no object there to recolour)'); return true; }
     toast(split ? 'Filled the selected part as its own object (' + painted + ' changed, no overlay layer)' : 'Changed the fill of ' + painted + ' object' + (painted === 1 ? '' : 's') + (refused ? '; ' + refused + ' partly selected shape(s) skipped (use "Fill in new layer")' : ''));
     return true;
   }
@@ -220,7 +232,7 @@
   }
   var _copy = copySelected;
   copySelected = function () { if (S && (tool === 'wand' || !selIds.length) && copyRegion()) return; return _copy.apply(this, arguments); };
-  window.WandTool = { deselect: clear, fillAsLayer: fillSelectionAsLayer, hasSelection: hasSelection, fillSelection: fillSelection, fillSelectionAsLayer: fillSelectionAsLayer, fillAt: fillAt, options: opt, state: function () { return S; }, count: count, loops: function () { return S && S.loops ? S.loops.length : 0; }, makeCutPath: makeCutPath, invert: invertSel, clear: clear, selectWhole: selectWhole, selectSubject: selectSubject };
+  window.WandTool = { drawObjects: drawObjects, deselect: clear, fillAsLayer: fillSelectionAsLayer, hasSelection: hasSelection, fillSelection: fillSelection, fillSelectionAsLayer: fillSelectionAsLayer, fillAt: fillAt, options: opt, state: function () { return S; }, count: count, loops: function () { return S && S.loops ? S.loops.length : 0; }, makeCutPath: makeCutPath, invert: invertSel, clear: clear, selectWhole: selectWhole, selectSubject: selectSubject };
 
   /* ---------- marching ants overlay ---------- */
   var baseDraw = draw;

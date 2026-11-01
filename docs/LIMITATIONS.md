@@ -64,3 +64,11 @@ See "What would unblock real cutting" in `RESEARCH.md`: capture the official sof
 * A wand copy is a **picture** (pixels), not cut outlines. For a cuttable shape use Make cut path.
 * With no fonts loaded, new text is drawn in the browser's default sans-serif and cannot be converted to shapes until a font is loaded (Fonts...).
 * If you deliberately want text in exactly #44ff66 (the factory green), pick it via another shade; that exact value is treated as "unchanged" and becomes black.
+* Fonts folder: the bundle is made by the app, not by copying font files into the folder (a file:// page cannot read a folder). Loading hundreds of fonts from the bundle slows start-up (each is parsed). If you open the app through `./tools/serve.sh`, the same bundle is used.
+* I could not test Brave. The reason fonts vanished for you there is not confirmed; the Fonts window now reports when the browser refuses storage.
+
+## v6.10
+* Printing goes through the browser's print dialog, which I cannot drive or test here (no printer; headless Chromium has none). The page handed to it is verified (exact size, one page). Choose "100% / actual size" there, and turn off headers and footers.
+* No Cricut sensor marks, and no cutting: the app cannot make a Maker read or cut a printed sheet. The cut-line SVG is for other cutting software or hand cutting.
+* Cut lines follow what is drawn: a sticker made of separate pieces gets one outline per piece (use a larger offset, or group and merge them as one shape, to get one outline). The cut line sits on the artwork edge plus the offset; there is no extra printed bleed.
+* The printer cannot print to the paper edge (set the margin to your printer's limit, usually 0.25 in).

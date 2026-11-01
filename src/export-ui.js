@@ -75,7 +75,7 @@
         '<label id="expSelRow"><input type="checkbox" id="expSel"> Selected objects only</label>' +
       '</div>' +
       '<div id="expMsg" style="font-size:11px;line-height:1.5;color:var(--dim);min-height:16px"></div>' +
-      '<div style="display:flex;gap:8px;justify-content:flex-end"><button class="mbtn" id="expCancel" style="width:auto">Cancel</button><button class="mbtn go" id="expGo" style="width:auto;font-size:14px;padding:10px 22px">Export</button></div></div>';
+      '<div style="display:flex;gap:8px;justify-content:flex-end"><button class="mbtn" id="expPrint" style="width:auto" title="Print a sticker sheet with cut lines (Ctrl+P)">Print\u2026</button><button class="mbtn" id="expCancel" style="width:auto">Cancel</button><button class="mbtn go" id="expGo" style="width:auto;font-size:14px;padding:10px 22px">Export</button></div></div>';
     document.body.appendChild(ov);
     function q(s) { return ov.querySelector(s); }
     q('input[value="' + prefs.format + '"]').checked = true; q('#expUnits').value = prefs.units; q('#expText').checked = !!prefs.textAsPaths; q('#expCrop').checked = !!prefs.cropToDesign;
@@ -85,6 +85,7 @@
     function shut() { ov.remove(); document.removeEventListener('keydown', onKey, true); }
     function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); shut(); } }
     document.addEventListener('keydown', onKey, true);
+    q('#expPrint').onclick = function () { shut(); if (window.PrintSheet) PrintSheet.open(); };
     q('#expCancel').onclick = shut; ov.onclick = function (e) { if (e.target === ov) shut(); };
     q('#expGo').onclick = function () {
       prefs.format = q('input[name="expFmt"]:checked').value; prefs.units = q('#expUnits').value; prefs.textAsPaths = q('#expText').checked; prefs.cropToDesign = q('#expCrop').checked; prefs.selectionOnly = q('#expSel').checked; savePrefs();

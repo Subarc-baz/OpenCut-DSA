@@ -1,4 +1,4 @@
-# OpenCut DSA v6.8
+# OpenCut DSA v6.10
 
 A replacement for Cricut Design Space. Read below
 
@@ -9,6 +9,16 @@ v6 cannot cut on a real Maker 3 or any other cricut atm. No public, verified pro
 
 I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS USB AND BLUTOOTH PROTOCOLS SO ITS BEEN DIFFICULT
 
+
+## New in v6.10
+* **Print sheet** (Ctrl+P, right-click > Print..., or the Print... button in the Export window). Prints your design to any printer from the browser's own print dialog, at exact paper size (US Letter or A4, drawn at 300 dpi), so stickers come out at real size. Options: printer margin, Size %, shrink to fit, centre or top-left, selected objects only. Choose your printer and print at 100% (no "fit to page") in the browser's dialog.
+* **Cut lines for stickers:** optional dashed pink cut line around each sticker (each object or group), with an offset (default 0.04 in) and "outline only" (holes filled). **Save cut-line SVG** writes the same cut lines at the same position on the same paper size (96 units = 1 inch), so you can cut that sheet in other cutting software or by hand.
+* **What this is not:** it does not print Cricut sensor marks and it cannot cut. The Maker still cannot be driven from this app (see the top of this file). Print Then Cut as Design Space does it needs both halves; this is the print half plus matching cut lines.
+
+## New in v6.9
+* Fill now works on empty (blank) wand selections. Select the empty space around a pasted cut-out, or a blank PNG canvas or mat, with the wand and fill it (Bucket click inside the selection, a Colors swatch, a Swatch Library tile or the Fill button): the empty space has no object to recolour, so a new shape named "Filled empty area" is created behind your objects with the colour or swatch. Before, only the thin anti-aliased edge of the neighbouring picture was recoloured while the message still said it changed the fill, so nothing visible happened. Positive space (the object itself) still changes the object's own fill, with no extra shape.
+* Fonts folder: fonts that load every time you open the app, even when you just double-click index.html. A web page cannot read a folder next to it, but it can load one script file, so the app writes that file for you: Fonts... > add your fonts (Add font folder..., for example C:\Windows\Fonts) > Save fonts to app folder... > move the downloaded fonts-bundle.js into the fonts folder next to index.html. After that those fonts load on every start in any browser, without relying on browser storage. Fonts from the folder are marked "fonts folder" in the Fonts window. Re-save and replace the file whenever you add more. Keep it under about 160 MB; hundreds of fonts make start-up slower, so add the ones you use.
+* If your browser will not keep added fonts (Brave Shields, clear-on-exit, private mode), the Fonts window now says so and points you to the fonts folder, and asks the browser to keep them permanently.
 
 ## New in v6.8
 
@@ -98,7 +108,7 @@ I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS 
 ```
 npm install                       # installs Playwright (dev only)
 npx playwright install chromium   # or set CHROMIUM=/path/to/chrome
-npm test                          # 143 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5 + 4
+npm test                          # 153 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5 + 4 + 3 + 3 + 4
 # font tests need DejaVu fonts or FONT_TTF / FONT_BOLD_TTF=/path/to.ttf
 npm run build                     # rebuilds index.html from src/
 ```
@@ -125,6 +135,7 @@ src/maskops.js        wand algorithms (flood fill, outline tracing)
 src/swatches.js       swatch library panel + Bucket tool
 src/wand.js           Magic Wand tool
 swatches/             optional built-in library (see Swatch section)
+fonts/                put fonts-bundle.js here (made by Fonts... > Save fonts to app folder)
 src/vendor/           opentype.js 1.3.4 (MIT, inlined)
 src/machine.js        hardware layer: job preparation, simulator, read-only USB/serial probes
 src/machine-ui.js     Cut tab + Console wiring
