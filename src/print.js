@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   var MO = window.MaskOps, SIZES = { letter: { w: 8.5, h: 11, name: 'US Letter 8.5 × 11 in' }, a4: { w: 8.27, h: 11.69, name: 'A4 210 × 297 mm' } };
-  var prefs = { paper: 'letter', margin: 0.25, scale: 100, shrink: true, center: false, selOnly: false, cut: true, offset: 0.04, outerOnly: true };
+  var prefs = { paper: 'letter', margin: 0.25, scale: 100, shrink: true, center: false, selOnly: false, cut: true, printLines: true, offset: 0.04, outerOnly: true };
   var CUT_COLOR = '#ff00aa', CUT_DPI = 150;
 
   function items() {                                   /* the objects that will print, in stacking order */
@@ -80,7 +80,7 @@
   function sendToPrinter(canvas, P) {
     var fr = document.createElement('iframe'); fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden'; document.body.appendChild(fr);
     var d = fr.contentWindow.document; d.open(); d.write(pageHtml(canvas.toDataURL('image/png'), P)); d.close();
-    var img = d.getElementById('pg'), go = function () { try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) { toast('Could not open the print dialog: ' + (e && e.message || e)); } setTimeout(function () { fr.remove(); }, 60000); };
+    var img = d.getElementById('pg'), go = function () { try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) { toast('Could not open the print dialog: ' + (e && e.message || e)); } try { window.focus(); document.getElementById('cvs').focus(); } catch (e2) { } setTimeout(function () { fr.remove(); }, 60000); };
     if (img.complete) go(); else img.onload = go;
     window.__lastPrintFrame = fr;
   }
@@ -88,7 +88,7 @@
   /* ---------- dialog ---------- */
   var st = document.createElement('style');
   st.textContent = '#prDlg{position:fixed;inset:0;z-index:10000;background:rgba(6,10,24,.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}#prDlg .box{background:var(--bg3,#12122a);border:1px solid var(--bdr2,#2c2c55);border-radius:14px;padding:18px;width:640px;max-width:96vw;max-height:94vh;overflow:auto;color:var(--txt,#e4eaf8);font:13px var(--ui,system-ui,sans-serif);display:flex;gap:16px;flex-wrap:wrap}'
-    + '#prDlg h3{margin:0 0 8px;color:var(--portal,#44ff66);font-size:16px}#prDlg .col{flex:1;min-width:240px}#prDlg label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}#prDlg label.ck{justify-content:flex-start}'
+    + '#prDlg h3{margin:0 0 8px;color:var(--portal,#ff3fc8);font-size:16px}#prDlg .col{flex:1;min-width:240px}#prDlg label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}#prDlg label.ck{justify-content:flex-start}'
     + '#prDlg input[type=number],#prDlg select{width:90px;padding:4px;background:#1c1c3a;border:1px solid #3a3a6a;color:#fff;border-radius:6px}#prDlg select{width:150px}#prDlg .info{margin:8px 0;color:#9a9ab8;min-height:3em;font-size:12px;line-height:1.45}#prDlg .warn{color:#ffb454}'
     + '#prDlg .pv{background:#e9ecf3;border-radius:6px;padding:6px;text-align:center}#prDlg canvas{max-width:100%;box-shadow:0 2px 10px rgba(0,0,0,.4);background:#fff}#prDlg .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}';
   document.head.appendChild(st);
@@ -104,15 +104,16 @@
       + '<label class="ck"><input type="checkbox" id="prShrink"> Shrink to fit the page if too big</label>'
       + '<label class="ck"><input type="checkbox" id="prCenter"> Center on the page (otherwise top-left)</label>'
       + '<label class="ck" id="prSelRow"><input type="checkbox" id="prSel"> Selected objects only</label>'
-      + '<label class="ck"><input type="checkbox" id="prCut"> Print cut lines around each sticker</label>'
+      + '<label class="ck"><input type="checkbox" id="prCut"> Show cut lines around each sticker</label>'
+      + '<label class="ck" id="prPLRow"><input type="checkbox" id="prPL"> Print the cut lines on the paper (untick to only see them here)</label>'
       + '<label>Cut line offset (in)<input type="number" id="prOff" min="0" max="0.5" step="0.01"></label>'
       + '<label class="ck"><input type="checkbox" id="prOuter"> Outline only (fill holes, like a sticker)</label>'
       + '<div class="info" id="prInfo"></div></div>'
-      + '<div class="col"><div class="pv"><canvas id="prPv"></canvas></div><div class="info">Dashed pink lines are the cut lines. A sticker is each object or group. Printers cannot print right to the paper edge.</div>'
+      + '<div class="col"><div class="pv"><canvas id="prPv"></canvas></div><div class="info">Dashed pink lines are the cut lines (shown here even when they are not printed). A sticker is each object or group. Printers cannot print right to the paper edge.</div>'
       + '<div class="row"><button class="mbtn" id="prSvg" style="width:auto" title="Cut lines only, same position as the printed sheet">Save cut-line SVG</button><button class="mbtn" id="prCancel" style="width:auto">Cancel</button><button class="mbtn go" id="prGo" style="width:auto">Print…</button></div></div>';
     var $ = function (s) { return b.querySelector(s); };
-    function load() { $('#prPaper').value = prefs.paper; $('#prMargin').value = prefs.margin; $('#prScale').value = prefs.scale; $('#prShrink').checked = prefs.shrink; $('#prCenter').checked = prefs.center; $('#prSel').checked = hasSel && prefs.selOnly; $('#prSel').disabled = !hasSel; $('#prSelRow').style.opacity = hasSel ? 1 : .5; $('#prCut').checked = prefs.cut; $('#prOff').value = prefs.offset; $('#prOuter').checked = prefs.outerOnly; }
-    function read() { prefs.paper = $('#prPaper').value; prefs.margin = parseFloat($('#prMargin').value) || 0; prefs.scale = parseFloat($('#prScale').value) || 100; prefs.shrink = $('#prShrink').checked; prefs.center = $('#prCenter').checked; prefs.selOnly = $('#prSel').checked; prefs.cut = $('#prCut').checked; prefs.offset = parseFloat($('#prOff').value) || 0; prefs.outerOnly = $('#prOuter').checked; }
+    function load() { $('#prPaper').value = prefs.paper; $('#prMargin').value = prefs.margin; $('#prScale').value = prefs.scale; $('#prShrink').checked = prefs.shrink; $('#prCenter').checked = prefs.center; $('#prSel').checked = hasSel && prefs.selOnly; $('#prSel').disabled = !hasSel; $('#prSelRow').style.opacity = hasSel ? 1 : .5; $('#prCut').checked = prefs.cut; $('#prPL').checked = prefs.printLines; $('#prOff').value = prefs.offset; $('#prOuter').checked = prefs.outerOnly; }
+    function read() { prefs.paper = $('#prPaper').value; prefs.margin = parseFloat($('#prMargin').value) || 0; prefs.scale = parseFloat($('#prScale').value) || 100; prefs.shrink = $('#prShrink').checked; prefs.center = $('#prCenter').checked; prefs.selOnly = $('#prSel').checked; prefs.cut = $('#prCut').checked; prefs.printLines = $('#prPL').checked; $('#prPL').disabled = !prefs.cut; $('#prPLRow').style.opacity = prefs.cut ? 1 : .5; prefs.offset = parseFloat($('#prOff').value) || 0; prefs.outerOnly = $('#prOuter').checked; }
     var cache = { key: '', loops: null }, L = null, list = null;
     function refresh() {
       read(); list = items(); L = layout(list, prefs); var info = $('#prInfo'), go = $('#prGo'), svg = $('#prSvg');
@@ -121,16 +122,16 @@
       if (prefs.cut) { if (cache.key !== key) { cache.loops = cutLoops(list, L, prefs); cache.key = key; } } else { cache.loops = null; cache.key = ''; }
       var c = renderPage(70, list, L, prefs.cut ? cache.loops : null), pv = $('#prPv'); pv.width = c.width; pv.height = c.height; pv.getContext('2d').drawImage(c, 0, 0);
       var m = L.margin, g = pv.getContext('2d'); g.save(); g.setLineDash([4, 4]); g.strokeStyle = 'rgba(0,120,255,.55)'; g.strokeRect(m * 70, m * 70, c.width - 2 * m * 70, c.height - 2 * m * 70); g.restore();
-      var msg = 'Artwork ' + (Math.round(L.cw * 100) / 100) + ' × ' + (Math.round(L.ch * 100) / 100) + ' in on ' + L.paper.name + (L.shrunk ? ' (shrunk to fit: ' + Math.round(L.sc * 100) + '%)' : '') + '. ' + (prefs.cut ? (cache.loops ? cache.loops.length : 0) + ' cut line(s).' : '');
+      var msg = 'Artwork ' + (Math.round(L.cw * 100) / 100) + ' × ' + (Math.round(L.ch * 100) / 100) + ' in on ' + L.paper.name + (L.shrunk ? ' (shrunk to fit: ' + Math.round(L.sc * 100) + '%)' : '') + '. ' + (prefs.cut ? (cache.loops ? cache.loops.length : 0) + ' cut line(s)' + (prefs.printLines ? '.' : ', shown here only (they will NOT be printed).') : '');
       if (!L.fits) msg += ' <span class="warn">It is bigger than the printable area; the edges will be cut off. Enable Shrink to fit or lower Size.</span>';
       info.innerHTML = msg; go.disabled = false; svg.disabled = !prefs.cut || !(cache.loops && cache.loops.length);
     }
-    function sigObjs(l) { return l.map(function (q) { return [q.id, q.x, q.y, q.w, q.h, q.cx, q.cy, q.rx, q.ry, q.r, q.fill, q.stroke, q.text, q.font, q.contours ? q.contours.length : '', q.pattern && q.pattern.sid].join(','); }).join(';'); }
+    function sigObjs(l) { return l.map(function (q) { return [q.id, q.x, q.y, q.w, q.h, q.cx, q.cy, q.rx, q.ry, q.r, q.fill, q.stroke, q.text, q.font, q.rot, q.strokeW, q.x1, q.y1, q.x2, q.y2, q.contours ? q.contours.length : '', q.pattern && q.pattern.sid].join(','); }).join(';'); }
     load(); b.querySelectorAll('input,select').forEach(function (i) { i.oninput = i.onchange = function () { setTimeout(refresh, 0); }; });
     function close() { o.remove(); document.removeEventListener('keydown', key, true); }
     function key(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } }
     document.addEventListener('keydown', key, true); $('#prCancel').onclick = close; o.addEventListener('mousedown', function (e) { if (e.target === o) close(); });
-    $('#prGo').onclick = function () { refresh(); if (!L) return; var c = renderPage(300, list, L, prefs.cut ? cache.loops : null); close(); sendToPrinter(c, L.paper); toast('Opening the print dialog… choose your printer and print at 100% (no "fit to page").'); };
+    $('#prGo').onclick = function () { refresh(); if (!L) return; var c = renderPage(300, list, L, prefs.cut && prefs.printLines ? cache.loops : null); close(); sendToPrinter(c, L.paper); toast('Opening the print dialog… choose your printer and print at 100% (no "fit to page").'); };
     $('#prSvg').onclick = function () {
       refresh(); if (!L || !cache.loops) return; var a = document.createElement('a'), u = URL.createObjectURL(new Blob([cutSvg(L, cache.loops)], { type: 'image/svg+xml' })); a.href = u; a.download = 'cut-lines-' + (prefs.paper === 'a4' ? 'a4' : 'letter') + '.svg'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 3000); toast('Saved the cut lines (same position as the print)');
     };

@@ -59,6 +59,7 @@
         defs.push('<pattern id="' + id + '" patternUnits="userSpaceOnUse" x="' + n(pf.x) + '" y="' + n(pf.y) + '" width="' + n(pf.w) + '" height="' + n(pf.h) + '"><image width="' + n(pf.w) + '" height="' + n(pf.h) + '" preserveAspectRatio="none" href="' + esc(pf.href) + '" xlink:href="' + esc(pf.href) + '"/></pattern>');
         s = s.replace(/ fill="[^"]*"/, ' fill="url(#' + id + ')"');
       } else if (s && o.pattern && o.type !== 'image') warnings.push('Swatch "' + o.pattern.sid + '" is not in the library; "' + (o.name || o.type) + '" was exported with its plain fill colour.');
+      if (s && +o.rot && o.type !== 'text' && o.type !== 'image' && isFinite(o.x + o.w)) s = '<g transform="rotate(' + n(o.rot) + ' ' + n(o.x + o.w / 2) + ' ' + n(o.y + o.h / 2) + ')">' + s + '</g>';
       return s;
     }
     function oneRaw(o) {
@@ -80,7 +81,7 @@
           else warnings.push('Text "' + String(o.text || '').slice(0, 20) + '" was skipped.');
           break;
         case 'image':
-          if (o.src) s = '<image x="' + n(o.x) + '" y="' + n(o.y) + '" width="' + n(o.w) + '" height="' + n(o.h) + '" href="' + esc(o.src) + '" xlink:href="' + esc(o.src) + '"' + (o.alpha < 1 ? ' opacity="' + n(o.alpha) + '"' : '') + '/>';
+          if (o.src) s = '<image x="' + n(o.x) + '" y="' + n(o.y) + '" width="' + n(o.w) + '" height="' + n(o.h) + '" href="' + esc(o.src) + '" xlink:href="' + esc(o.src) + '"' + (o.alpha < 1 ? ' opacity="' + n(o.alpha) + '"' : '') + (+o.rot ? ' transform="rotate(' + n(o.rot) + ' ' + n(o.x + o.w / 2) + ' ' + n(o.y + o.h / 2) + ')"' : '') + '/>';
           else warnings.push('Image "' + (o.name || 'image') + '" has no source data and was skipped.');
           break;
         default: warnings.push('Object type "' + o.type + '" is not supported by SVG export.');

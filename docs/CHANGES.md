@@ -88,3 +88,27 @@ Text tool, text effects, game, donate dialog, materials list, minimap, webcam/QR
 * `src/print.js` (new): Print sheet dialog. Items = visible objects (or the selection); a sticker = one object or one group (`gid`). Layout in inches (paper, margin, scale %, shrink, centre, cut-line pad). Cut lines: each sticker is rendered alone at 150 dpi (`WandTool.drawObjects`), alpha > 8 -> mask, optional hole fill (flood from the border), square dilation by the offset, `MaskOps.maskToPaths` (smoothed), mapped to page inches. The page is drawn once at 300 dpi; printing writes it as one `<img>` sized in inches with `@page{size;margin:0}` into a hidden iframe and calls `print()`. `cutSvg` writes the same loops (96 units = 1 in).
 * Entry points: Ctrl+P (capture handler), context-menu item (patch step 10m), Print button in the Export window. `WandTool.drawObjects` is now exposed. `tests/v610.browser.test.js` (4) checks layout, pixels, cut loops, SVG, that the print page is a one-page letter PDF (Chromium `page.pdf`), and the entry points. No printer was used.
 * Research used: Design Space's Print Then Cut maximum sizes (Letter: about 7.44 x 9.94 in) and Flatten behaviour (see the discussion; Flatten is not implemented).
+
+# v6.11
+* `print.js`: `prefs.printLines` (checkbox `#prPL`); preview and `cutSvg` use the loops whenever `cut` is on, the 300 dpi print page draws them only when `cut && printLines`. After `print()` the iframe no longer keeps focus (`window.focus()`), which had blocked Ctrl+P. Test added to `tests/v610.browser.test.js` (printed sheet has no pink pixels when unticked, has them when ticked).
+
+# v6.12
+* Patch steps 10n-10q in `tools/patch_core.py`: green to magenta (`#44ff66`->`#ff3fc8`, `#b5ff3b`->`#ff8ae6`, rgba tints; the colour-dot array, logo and favicon lines are excluded), "Make Cut" button text, donate button + modal + handlers removed, header gets the `#swatches` container (the right-pane Colors section is replaced by a `#swatchAnchor` marker that the Swatch Library panel attaches to), real QR encoder.
+* `src/theme.css` rewritten for magenta + graphite grey; `tools/logo.svg` recoloured (magenta to silver gradient); the brand text keeps its gradient.
+* QR: the old `qrEncode` drew a hash-based placeholder. It now calls the vendored `src/vendor/qrcode.js` (qrcode-generator 1.4.4, MIT), byte mode, UTF-8, ECC M, 4-module quiet zone. `tests/v612.browser.test.js` decodes the output with jsQR (`tests/vendor/jsQR.js`, Apache-2.0).
+* `src/shape-warp.js`: Shape Warp panel. Shapes are tessellated, warped in their bounding-box frame and stored as `path` objects with `wsrc` (original), `wbox`, `wstyle`, `wamt`; lines become open paths (`o.open`, honoured by `drawPathObj`, `TextPaths.pathObjectPolylines` and `machine.js`). None rebuilds the original from `wsrc` after applying any later move/resize.
+* `src/header-layout.js`: re-parents `#swatches` into the header and stacks Undo/Redo and PNG/Mat (`.hstack`); ids and handlers are unchanged.
+* `tests/v612.browser.test.js` (7 tests); `tests/v65.browser.test.js` theme test updated for the grey workspace.
+
+# v6.13
+* `src/transform-handles.js`: capture-phase mouse listeners on the canvas + a wrapped `draw()` overlay. Line thickness handles (`o.strokeW`), rotation handle for image/text (`o.rot` in degrees, about the centre of the unrotated box), rotated-image corner resize in the rotated frame, rotated-text font-size corner. Undo is one snapshot per drag.
+* `core-engine.js`: `isRot`, `baseBox`, `rotCenter`, `rotPt`/`unrotPt`, `rotCorners`, `objBounds` (rotated AABB), `drawImageObj`, `distToSeg`; `scaleObj` scales line thickness on uniform scale and keeps rotated images rectangular (uniform about the centre).
+* patch step 10r: `drawTextObject` rotates around the text-box centre, PNG/canvas image drawing via `drawImageObj`, `hitTest` works in the rotated frame and uses point-to-segment distance for lines, old unrotated selection box / text handle are skipped for rotated objects.
+* `fonts.js outlineText` rotates the outlines (so SVG export, the cut job and Convert Text to Shapes follow); `svgexport.js` adds `transform="rotate()"` to images; `export-ui.js` live-text fallback is wrapped in a rotated group; `wand.js` / `print.js` signatures include `rot`, strokeW and line ends, and the wand paints rotated images through the rotation.
+* `header-layout.js`: palette inserted before the PNG/Mat stack. `tests/v613.browser.test.js` (6 tests).
+
+# v6.14
+* Rotation generalised to rect/ellipse/star/polygon/path (`canRot`, `rotShapeCtx` in `core-engine.js`; `o.rot` degrees about the centre of the x/y/w/h box). Patch step 10s: PNG/canvas draw loops call `rotShapeCtx`, Transform panel gets a `Rot` field (`tfR`). `wand.js drawObjects`, `svgexport.js` (rotate group) and `machine.js prepareJob` (rotated points) follow. `scaleObj` scales rotated shapes uniformly about their centre.
+* `transform-handles.js`: rotation handle and rotated-corner resize for all those types (ellipse/star/polygon/rect fields kept in sync), numeric `Rot` field (a line is rotated by moving its end points).
+* `src/boolops.js` + vendored `src/vendor/clipper.js` (clipper-lib 6.4.2): integer geometry (x100), pairwise union/difference/intersection with non-zero fill, `ClipperOffset` (round joins) for Offset and open-butt offset for Line to Outline. Results become `path` objects via `TextPaths.makePathGeometry`. `ShapeWarp.outline/densify` are reused to flatten shapes; rotation is baked in.
+* `tests/v614.browser.test.js` (6 tests).

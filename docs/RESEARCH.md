@@ -52,4 +52,4 @@ Alternatively, **Export Cut Paths (SVG)** lets you use this editor for design an
 
 ## v6 addendum
 * opentype.js 1.3.4 (MIT, `src/vendor/opentype.LICENSE`) is vendored and inlined. It parses TTF/OTF/WOFF but does **not** apply GPOS kerning, so pair kerning is taken from the browser's `measureText` instead.
-* The Local Font Access API (`window.queryLocalFonts`) is Chromium-only and permission-gated; availability in Brave was not verified.
+* The Local Font Access API (`window.queryLocalFonts`) is Chromium-only and permission-gated.

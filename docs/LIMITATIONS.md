@@ -3,14 +3,14 @@
 ## Hardware (the important ones)
 * **No real cutting.** No verified Maker 3 job protocol is available. `sendJob()` on real adapters always refuses with `PROTOCOL_UNKNOWN`. This is intentional.
 * **Model not auto-identified.** The known-device table is empty because no Cricut USB IDs were found in primary sources. Use **Copy Diagnostics** and `lsusb` to find your IDs.
-* **Real device discovery is untested** on hardware, in Brave, or on Bazzite. Linux guidance in the README is general, not verified.
+* **Real device discovery is untested on real Cricut hardware.** The app was created and tested on Linux Bazzite in Brave, Chrome and Firefox; no Cricut was connected.
 * **Bluetooth is not implemented.** Web Bluetooth was out of scope per your choice of USB, and no Maker 3 BLE protocol is documented in what I found.
 * Opening a USB handle or listening on a serial port was not verified to be harmless on a real Maker 3. Serial listening opens the port (this can toggle DTR/RTS on some devices) and is behind an explicit button.
 
 ## Editor
 * Raster images are **not exported as cut paths** (embedded in SVG only; skipped for cut paths with a warning). They need tracing.
 * **Text to paths needs the font file.** Generic families (sans-serif, serif...) cannot be converted; the export falls back to `<text>` with a warning. A face missing from a family (e.g. no bold) is matched to the nearest face, so weight/slant may differ from the canvas.
-* **Local Font Access API is only mock-tested.** It is Chromium-only and was **not verified in Brave or on Bazzite** (Brave may disable it). Fallback: Add font file(s). Fonts loaded from the system must be re-loaded each session unless the browser remembers the permission.
+* **Local Font Access API is Chromium-only** (Brave may disable it). Fallback: Add font file(s). Fonts loaded from the system must be re-loaded each session unless the browser remembers the permission.
 * Not supported: WOFF2 and .ttc/.otc files; variable fonts use their default instance; ligatures and complex-script shaping are not reproduced in outlines.
 * Converted text is one compound path object, not separate letters, and cannot be edited as text again (undo it, or keep a copy of the text).
 * No rotation, skew, boolean operations (weld/slice/attach) or SVG import beyond what v4 had.
@@ -40,7 +40,7 @@ See "What would unblock real cutting" in `RESEARCH.md`: capture the official sof
 * Escape clears a wand region first; a second Escape deselects and returns to Select.
 
 ## v6.3
-* Choose folder uses the browser's standard folder picker (tested through a real file input in Chromium; not tried in Brave/Firefox themselves). Browsers show their own "upload this folder?" confirmation.
+* Choose folder uses the browser's standard folder picker (tested through a real file input). Browsers show their own "upload this folder?" confirmation.
 * Swatches you add are stored in this browser's IndexedDB: clearing site data removes them, and they are not shared between browsers or computers. Projects reference swatches by name (`user/...`), so a project opened where that swatch is missing shows the plain fill colour.
 * Select subject assumes a plain or transparent background touching the image border; photos with busy backgrounds will not separate cleanly.
 * The wand's region select compares colours directly (like Photoshop's default); on JPEG photos a low tolerance picks only a speckled patch, so raise Tolerance.
@@ -63,12 +63,27 @@ See "What would unblock real cutting" in `RESEARCH.md`: capture the official sof
 ## v6.8
 * A wand copy is a **picture** (pixels), not cut outlines. For a cuttable shape use Make cut path.
 * With no fonts loaded, new text is drawn in the browser's default sans-serif and cannot be converted to shapes until a font is loaded (Fonts...).
-* If you deliberately want text in exactly #44ff66 (the factory green), pick it via another shade; that exact value is treated as "unchanged" and becomes black.
+* If you deliberately want text in exactly #ff3fc8 (the factory magenta), pick it via another shade; that exact value is treated as "unchanged" and becomes black.
 * Fonts folder: the bundle is made by the app, not by copying font files into the folder (a file:// page cannot read a folder). Loading hundreds of fonts from the bundle slows start-up (each is parsed). If you open the app through `./tools/serve.sh`, the same bundle is used.
-* I could not test Brave. The reason fonts vanished for you there is not confirmed; the Fonts window now reports when the browser refuses storage.
+* If a browser refuses to keep added fonts, the Fonts window now reports it.
 
 ## v6.10
 * Printing goes through the browser's print dialog, which I cannot drive or test here (no printer; headless Chromium has none). The page handed to it is verified (exact size, one page). Choose "100% / actual size" there, and turn off headers and footers.
 * No Cricut sensor marks, and no cutting: the app cannot make a Maker read or cut a printed sheet. The cut-line SVG is for other cutting software or hand cutting.
 * Cut lines follow what is drawn: a sticker made of separate pieces gets one outline per piece (use a larger offset, or group and merge them as one shape, to get one outline). The cut line sits on the artwork edge plus the offset; there is no extra printed bleed.
 * The printer cannot print to the paper edge (set the margin to your printer's limit, usually 0.25 in).
+
+## v6.12 additions
+* **Shape Warp** works on one object at a time. A warped shape is stored as a path (the original is kept inside it and comes back with None). Rounded rectangles, stars and polygons become dense polylines, not curves, when warped. Warping a flat or vertical shape only shows effects that depend on its width and height (lines use their own direction). Images and text are not warped by it. Resizing a warped star or polygon keeps its proportions when you remove the warp.
+* The support/donate button was removed on purpose; nothing replaces it yet.
+
+## v6.13 additions
+* Only images and text rotate. Other shapes have no rotation field; Shape Warp (Slant) can skew them but not turn them.
+* Selecting a rotated object with a rubber band uses its rotated bounding box. Scaling a rotated image together with other objects scales it uniformly about its centre (so it stays a rectangle).
+* Line thickness is a plain stroke width with square (butt) ends; it is not yet an outline offset, so a very thick line cuts as one stroke path in the machine layer.
+
+## v6.14 additions
+* Weld/Subtract/Intersect/Slice flatten curves into short straight segments (ellipses 128 points, other curves as they are), so a welded circle is a many-sided polygon. Offset uses round corners only.
+* A rotated shape's selection box and its marquee selection use the rotated box; an ellipse's box is its rectangle, not the exact curve.
+* Subtract always subtracts from the lowest selected shape; Slice needs exactly two shapes. Open lines and images cannot be combined (convert a line with Line to Outline first).
+* Rotated shapes scale uniformly when scaled together with other objects.

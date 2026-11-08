@@ -181,7 +181,13 @@
       return ensureParsed(m.face).then(function (font) {
         var glyphs = textHasEffect(o) ? textGlyphs(o).glyphs : null;
         var measure = function (str) { ctx.save(); ctx.font = o.font || 'bold 48px sans-serif'; var w = ctx.measureText(str).width; ctx.restore(); return w; };
-        return { contours: TP.textContours(font, o, { size: f.size, glyphs: glyphs, measure: measure }), exact: m.exact, face: m.face };
+        var cont = TP.textContours(font, o, { size: f.size, glyphs: glyphs, measure: measure });
+        if (isRot(o)) {                                            /* v6.13: text rotation is applied to the outlines (export, cut job, convert to shapes) */
+          var a = rotRad(o), cs = Math.cos(a), sn = Math.sin(a), rc = rotCenter(o);
+          var rp = function (q) { var dx = q[0] - rc.x, dy = q[1] - rc.y; return [rc.x + dx * cs - dy * sn, rc.y + dx * sn + dy * cs]; };
+          cont = cont.map(function (c) { return c && c.points ? Object.assign({}, c, { points: c.points.map(rp) }) : c.map(rp); });
+        }
+        return { contours: cont, exact: m.exact, face: m.face };
       });
     });
   }

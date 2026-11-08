@@ -87,7 +87,7 @@
         var sp = []; for (var j = 0; j < o.n * 2; j++) { var rr = j % 2 === 0 ? o.r : o.ir, ab = Math.PI / o.n * j - Math.PI / 2; sp.push([o.cx + rr * Math.cos(ab), o.cy + rr * Math.sin(ab)]); }
         poly(sp, true); break; }
       case 'line': poly([[o.x1, o.y1], [o.x2, o.y2]], false); break;
-      case 'path': (o.contours || []).forEach(function (ct) { poly(ct.map(function (p) { return [o.x + p[0] * o.w / (o.bw || 1), o.y + p[1] * o.h / (o.bh || 1)]; }), true); }); break;
+      case 'path': (o.contours || []).forEach(function (ct) { poly(ct.map(function (p) { return [o.x + p[0] * o.w / (o.bw || 1), o.y + p[1] * o.h / (o.bh || 1)]; }), !o.open); }); break;
       case 'text': {
         var tp = opts && opts.textOutlines && opts.textOutlines[o.id];
         if (tp && tp.length) tp.forEach(function (c) { poly(c.points, c.closed !== false); });
@@ -107,6 +107,10 @@
     objects.forEach(function (o) {
       if (!o || o.hidden) return;
       var polys = objectToPolylines(o, warnings, opts);
+      if (+o.rot && o.type !== 'text' && o.type !== 'image') {          /* v6.14: rotated shapes (about the centre of their box) */
+        var rcx = o.x + o.w / 2, rcy = o.y + o.h / 2, ra = o.rot * Math.PI / 180, rco = Math.cos(ra), rsi = Math.sin(ra);
+        polys.forEach(function (pl) { pl.points = pl.points.map(function (q) { var dx = q[0] - rcx, dy = q[1] - rcy; return [rcx + dx * rco - dy * rsi, rcy + dx * rsi + dy * rco]; }); });
+      }
       polys.forEach(function (pl) {
         var pts = pl.points.map(function (p) { return [pxToMm(p[0]), pxToMm(p[1])]; });
         for (var i = 0; i < pts.length; i++) {

@@ -103,7 +103,7 @@ test('fonts: "Add font folder" loads .ttf files from a folder (like C:\\Windows\
 test('theme: lighter workspace and toolbar, readable icons; right-hand Tool Options panel unchanged; features intact', async () => {
   const p = await open();
   const th = await p.evaluate(() => { const cs = (s) => getComputedStyle(document.querySelector(s)); return { ws: cs('.workspace').backgroundImage, tb: cs('.ftoolbar').backgroundColor, icon: cs('.tbtn[data-tool="rect"]').color, rp: cs('.rpanel').backgroundColor, rail: cs('.tab-rail').backgroundColor, vt: cs('.vtab[data-t="cut"]').color }; });
-  assert.match(th.ws, /rgb\(70, 85, 122\)/); assert.equal(th.rp, 'rgba(13, 15, 26, 0.95)'); assert.equal(th.icon, 'rgb(228, 234, 248)'); assert.equal(th.vt, 'rgb(228, 234, 248)');
+  assert.match(th.ws, /rgb\(80, 80, 94\)/); assert.equal(th.rp, 'rgba(13, 15, 26, 0.95)'); assert.equal(th.icon, 'rgb(239, 239, 246)'); assert.equal(th.vt, 'rgb(239, 239, 246)');
   const lum = s => { const m = s.match(/\d+(\.\d+)?/g).map(Number); return 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]; };
   assert.ok(lum(th.tb) > 40 && lum(th.tb) < 140, 'toolbar is mid-tone, not black or white: ' + th.tb);
   const out = await p.evaluate(() => { const c = document.getElementById('cvs'), x = c.getContext('2d'); const d = x.getImageData(c.width - 60, 140, 1, 1).data; return [d[0], d[1], d[2], d[3]]; });   /* inside the canvas, right of the mat: transparent, so the CSS surround shows */

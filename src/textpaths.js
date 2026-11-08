@@ -136,7 +136,7 @@
   /* path object -> absolute-pixel polylines */
   function pathObjectPolylines(o) {
     var fx = o.w / (o.bw || 1), fy = o.h / (o.bh || 1);
-    return (o.contours || []).map(function (ct) { return { closed: true, points: ct.map(function (p) { return [o.x + p[0] * fx, o.y + p[1] * fy]; }) }; });
+    return (o.contours || []).map(function (ct) { return { closed: !o.open, points: ct.map(function (p) { return [o.x + p[0] * fx, o.y + p[1] * fy]; }) }; });
   }
 
   /* ---------- connected pieces of a compound path ---------- */

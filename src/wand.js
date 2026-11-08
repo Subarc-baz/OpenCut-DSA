@@ -12,7 +12,7 @@
   /* ---------- flat rendering of the design (same drawing rules as PNG export) ---------- */
   function drawObjects(x, list) {
     list.forEach(function (o) {
-      if (o.hidden) return; x.save(); x.globalAlpha = o.alpha || 1;
+      if (o.hidden) return; x.save(); rotShapeCtx(x, o); x.globalAlpha = o.alpha || 1;
       x.fillStyle = (o.pattern && window.patFill && window.patFill(x, o)) || o.fill || 'none'; x.strokeStyle = o.stroke || '#fff'; x.lineWidth = o.strokeW || 2;
       if (o.type === 'rect') { var cr = o.cornerR || 0; if (cr > 0) { x.beginPath(); x.roundRect(o.x, o.y, o.w, o.h, cr); if (o.fill !== 'none') x.fill(); x.stroke(); } else { if (o.fill !== 'none') x.fillRect(o.x, o.y, o.w, o.h); x.strokeRect(o.x, o.y, o.w, o.h); } }
       else if (o.type === 'ellipse') { x.beginPath(); x.ellipse(o.cx, o.cy, o.rx || 1, o.ry || 1, 0, 0, Math.PI * 2); if (o.fill !== 'none') x.fill(); x.stroke(); }
@@ -21,14 +21,14 @@
       else if (o.type === 'polygon') { polyPath(x, o.cx, o.cy, o.r, o.n); if (o.fill !== 'none') x.fill(); x.stroke(); }
       else if (o.type === 'line') { x.beginPath(); x.moveTo(o.x1, o.y1); x.lineTo(o.x2, o.y2); x.stroke(); }
       else if (o.type === 'path') drawPathObj(x, o);
-      else if (o.type === 'image' && o.img && o.img.complete && o.img.naturalWidth) x.drawImage(o.img, o.x, o.y, o.w, o.h);
+      else if (o.type === 'image') drawImageObj(x, o);
       x.restore();
     });
   }
   function sigAll() {
     return matW + 'x' + matH + '#' + objects.map(function (o) {
       return [o.id, o.type, o.x, o.y, o.w, o.h, o.cx, o.cy, o.r, o.ir, o.n, o.rx, o.ry, o.x1, o.y1, o.x2, o.y2, o.fill, o.stroke, o.strokeW, o.alpha, o.hidden ? 1 : 0, o.text, o.font, o.curve, o.warp, o.cornerR,
-        o.pattern ? o.pattern.sid + o.pattern.size : '', o.contours ? o.contours.length : '', o.bw, o.bh, o.img && o.img.naturalWidth].join('|');
+        o.rot, o.pattern ? o.pattern.sid + o.pattern.size : '', o.contours ? o.contours.length : '', o.bw, o.bh, o.img && o.img.naturalWidth].join('|');
     }).join(';');
   }
   /* frame = design-space rectangle that is rendered; list = objects to draw. Returns {data,w,h,scale,ox,oy}. Throws if the canvas is tainted. */
@@ -124,7 +124,7 @@
      "Fill in new layer" (fillSelectionAsLayer) keeps the old behaviour of putting a new filled shape on top. */
   function hasSelection() { if (S && stale()) { S = null; draw(); } return !!S; }
   function pickStyle(color) {
-    var t = {}; if (color) t.fill = color; else if (window.SwatchLib) window.SwatchLib.applyFill(t, window.SwatchLib.state.sid, window.SwatchLib.state.size); else t.fill = '#44ff66';
+    var t = {}; if (color) t.fill = color; else if (window.SwatchLib) window.SwatchLib.applyFill(t, window.SwatchLib.state.sid, window.SwatchLib.state.size); else t.fill = '#ff3fc8';
     if (t.fill === 'none') { toast('Fill is set to None. Untick None next to Fill to paint the selection.'); return null; }
     return t;
   }
@@ -135,7 +135,7 @@
     var nw = im.naturalWidth, nh = im.naturalHeight, c = document.createElement('canvas'); c.width = nw; c.height = nh; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
     var id = x.getImageData(0, 0, nw, nh), d = id.data, q = document.createElement('canvas').getContext('2d'); q.fillStyle = t.fill; q.fillRect(0, 0, 1, 1); var rgb = q.getImageData(0, 0, 1, 1).data, n = 0;
     for (var py = 0; py < nh; py++) for (var px = 0; px < nw; px++) {
-      var lx = Math.floor((o.x + (px + .5) * o.w / nw - S.ox) * S.scale), ly = Math.floor((o.y + (py + .5) * o.h / nh - S.oy) * S.scale);
+      var wx = o.x + (px + .5) * o.w / nw, wy = o.y + (py + .5) * o.h / nh; if (isRot(o)) { var rq = rotPt(o, wx, wy); wx = rq[0]; wy = rq[1]; } var lx = Math.floor((wx - S.ox) * S.scale), ly = Math.floor((wy - S.oy) * S.scale);
       if (lx < 0 || ly < 0 || lx >= S.w || ly >= S.h) continue; var k = ly * S.w + lx; if (!S.mask[k] || owned[k] !== idx) continue;
       var j = (py * nw + px) * 4; d[j] = rgb[0]; d[j + 1] = rgb[1]; d[j + 2] = rgb[2]; n++;
     }
@@ -243,7 +243,7 @@
     var inv = 1 / S.scale, lw = 1 / zoom;
     ctx.save(); ctx.translate(panX, panY); ctx.scale(zoom, zoom);
     ctx.beginPath(); S.loops.forEach(function (L) { L.forEach(function (p, i) { var X = S.ox + p[0] * inv, Y = S.oy + p[1] * inv; if (i) ctx.lineTo(X, Y); else ctx.moveTo(X, Y); }); ctx.closePath(); });
-    ctx.fillStyle = 'rgba(68,255,102,0.16)'; ctx.fill('nonzero');
+    ctx.fillStyle = 'rgba(255,63,200,0.16)'; ctx.fill('nonzero');
     ctx.lineWidth = lw * 1.5; ctx.setLineDash([]); ctx.strokeStyle = '#fff'; ctx.stroke();
     ctx.setLineDash([5 * lw, 5 * lw]); ctx.lineDashOffset = -dash * lw; ctx.strokeStyle = '#000'; ctx.stroke();
     ctx.restore();

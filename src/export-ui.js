@@ -15,6 +15,11 @@
   }
   /* live <text> for text that cannot be converted (no font file) */
   function fallbackText(o) {
+    var s = fallbackTextBase(o);
+    if (!isRot(o)) return s;
+    var rc = rotCenter(o); return '<g transform="rotate(' + num(o.rot) + ' ' + num(rc.x) + ' ' + num(rc.y) + ')">' + s + '</g>';
+  }
+  function fallbackTextBase(o) {
     var f = TP.parseFontString(o.font), col = (o.fill && o.fill !== 'none') ? o.fill : (o.stroke && o.stroke !== 'none' ? o.stroke : '#fff');
     var common = ' font-family="' + SE.esc(f.css.replace(/"/g, "'")) + '" font-size="' + f.size + '"' + (f.bold ? ' font-weight="bold"' : '') + (f.italic ? ' font-style="italic"' : '') +
       ' fill="' + SE.esc(col) + '"' + (o.alpha < 1 ? ' opacity="' + num(o.alpha) + '"' : '');

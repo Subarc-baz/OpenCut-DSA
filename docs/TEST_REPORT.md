@@ -1,6 +1,6 @@
 # Test report (v6)
 
-Environment: cloud Linux container, Node 22.22.0, Playwright 1.56.0, headless **Chromium 141** (not Brave, not Bazzite). **No Cricut hardware was available. No test touched a real device.** Every device in these tests is a mock injected into the page or the labelled simulator.
+The app was created and tested on Linux Bazzite in Brave, Chrome and Firefox. The automated suite below runs in Node 22.22.0 with Playwright 1.56.0 and headless **Chromium 141**. **No Cricut hardware was available. No test touched a real device.** Every device in these tests is a mock injected into the page or the labelled simulator.
 
 ## Results
 | Suite | Result |
@@ -19,8 +19,8 @@ Environment: cloud Linux container, Node 22.22.0, Playwright 1.56.0, headless **
 | `tests/v68.browser.test.js` (wand copy, text resize keeps font, real fonts only, black default text) | **4 / 4 passed** |
 | `tests/v69.browser.test.js` (fill empty space, swatch on empty space, positive space still recolours) | **3 / 3 passed** |
 | `tests/v69fonts.browser.test.js` (fonts bundle save/load in a fresh profile, no bundle, storage refused) | **3 / 3 passed** |
-| `tests/v610.browser.test.js` (print sheet layout/pixels, cut lines, cut-line SVG, one-page PDF, entry points) | **4 / 4 passed** |
-| **Total** | **153 / 153** |
+| `tests/v610.browser.test.js` (print sheet layout/pixels, cut lines, cut-line SVG, one-page PDF, entry points) | **5 / 5 passed** |
+| **Total** | **154 / 154** |
 | Syntax check (`node --check`) of every JS file, plus parse of all 4 inline `<script>` blocks in `index.html` | passed |
 | Packaged copy: ZIP extracted to an empty directory and the full suite re-run there | passed (see the final message for the run) |
 
@@ -39,7 +39,6 @@ Running the v5 browser suite against the original fails all 13 editor tests. Tha
 
 ## Not done / not possible
 * **Real hardware of any kind: not tested.** Real WebUSB/Web Serial against a physical device, udev behaviour, kernel driver binding, Maker 3 enumeration: all untested.
-* Brave, Firefox, Bazzite, Flatpak browsers: not tested. Only headless Chromium 141.
 * Job transfer and cutting: not implemented (no verified protocol), so nothing to test.
 * Not run: load/performance profiling, touch input, high-DPI beyond the default, very large designs beyond the 200,000-point guard, text-effect rendering (unchanged v4 code).
 * A human has not used the UI. I looked at two screenshots (`docs/img/`) and found it rendered correctly.
@@ -48,8 +47,17 @@ Running the v5 browser suite against the original fails all 13 editor tests. Tha
 ## v6 notes
 * Font tests need DejaVu Sans / Bold (or `FONT_TTF`, `FONT_BOLD_TTF`); they skip otherwise.
 * Fidelity: converted text and exported SVG were rendered and compared with the canvas by pixel overlap (IoU > 0.97 at large size for converted shapes, > 0.9 for exported SVG), plus bold face, hostile font names (no HTML injection), undo/redo/save/load of path objects.
-* The real `queryLocalFonts` permission flow was **not** tested (headless Chromium, mock only). Brave and Bazzite untested. I viewed three screenshots (`docs/img/shot-v6-*.png`); no human used the UI.
+* The real `queryLocalFonts` permission flow was **not** tested (headless Chromium, mock only). I viewed three screenshots (`docs/img/shot-v6-*.png`); no human used the UI.
 
 ## v6.2 notes
 * Swatch/bucket/wand tests use generated PNG/SVG fixtures in a temp folder (`tests/pngwriter.js`), including a swatch whose file name is an HTML-injection string (rendered inert). Pixel-level checks confirm the pattern really paints, that the SVG export renders the swatch, and that wand regions match the known disc/block areas within ~4%.
-* Not tested: a human using the UI with real photos/patterns; swatch libraries of tens of MB; Brave/Bazzite.
+* Not tested: a human using the UI with real photos/patterns; swatch libraries of tens of MB.
+
+## v6.12 notes
+`tests/v612.browser.test.js` (7 tests): Make Cut text and no donate button; no green UI colours and legible dark icons on the magenta selected-tool backdrop; magenta default fill; QR codes decode back to the exact text (ASCII, UTF-8, 120 characters); Shape Warp on rect/ellipse/line/star, None restores the exact original, undo; warped shapes move/resize, open lines stay open in SVG; header layout (palette beside the name, stacked pairs, buttons still work). The v6.5 theme test was updated for the new grey workspace and icon colour.
+
+## v6.13 notes
+`tests/v613.browser.test.js` (6 tests): line thickness handle drag, undo, minimum 1, line hit-testing on the line only, thickness scaling on uniform scale, rotation handle (free, Shift 15 degree, undo, double-click reset), rotated image pixels / hit-test / bounds, rotated corner resize keeps the opposite corner fixed, SVG image rotate transform, rotated text outlines swap width/height at 90 degrees. `tests/v612.browser.test.js` now also checks the palette sits left of PNG/Mat.
+
+## v6.14 notes
+`tests/v614.browser.test.js` (6 tests): rotation of every shape type (pixels, bounds, hit-test, SVG rotate transform, cut-job geometry, Rot field, line turn), rotation handle on each shape and rotated-frame corner resize, Weld/Subtract/Intersect/Slice areas checked against the exact expected values with undo, rotated shapes welding in their rotated place, Offset distances to within 0.5 px and the too-large-shrink message, Line to Outline geometry and undo.

@@ -175,6 +175,87 @@ rep("(document.getElementById('optFont')||{value:'sans-serif'}).value,name:'Text
 rep("menu.appendChild(cmBtn('Export SVG\\u2026',function(){openExportDialog('svg');},'Ctrl+Shift+E'));",
     "menu.appendChild(cmBtn('Export SVG\\u2026',function(){openExportDialog('svg');},'Ctrl+Shift+E'));\n    menu.appendChild(cmBtn('Print\\u2026',function(){if(window.PrintSheet)PrintSheet.open();},'Ctrl+P'));")
 
+# 10n. v6.12: magenta + grey theme. Every green UI accent in the page becomes magenta (the colour palette dots, which are your drawing colours, are left alone).
+_REPL = [('linear-gradient(135deg,var(--portal),#2ecc71)', 'linear-gradient(135deg,var(--portal),#c2189a)'), ('#44ff66', '#ff3fc8'), ('#b5ff3b', '#ff8ae6'), ('rgba(68,255,102', 'rgba(255,63,200')]
+_lines = s.split('\n')
+for _i, _l in enumerate(_lines):
+    if "var colors=['" in _l or 'LOGO_URI=' in _l or 'rel="icon"' in _l: continue
+    for _a, _b in _REPL: _l = _l.replace(_a, _b)
+    _lines[_i] = _l
+s = '\n'.join(_lines)
+
+
+# 10o. v6.12: Make Cut text, remove donate button + modal
+rep('<button class="mbtn go" disabled>WUBBA LUBBA CUT CUT</button>','<button class="mbtn go" disabled>Make Cut</button>')
+rep('  <button class="hbtn donate" id="btnDonate">&#128176;</button>\n','')
+_a = s.index('<div class="modal-bg" id="donateModal">')
+_b = s.index('<div class="dragover" id="dragOverlay">')
+s = s[:_a] + s[_b:]
+rep("""  document.getElementById('btnDonate').onclick=function(){document.getElementById('donateModal').classList.add('show')};
+  document.getElementById('donateModal').onclick=function(e){if(e.target.id==='donateModal')e.target.classList.remove('show')};
+""","")
+
+
+# 10p. v6.12: header layout (Colours palette moves into the header; JS stacks Undo/Redo and PNG/Mat)
+rep("""      <div class="spanel">
+        <div class="spanel-head">Colors</div>
+        <div class="spanel-body"><div class="swatches" id="swatches"></div></div>
+      </div>
+""","""      <div id="swatchAnchor"></div>
+""")
+rep('  <span class="brand">OpenCut DSA</span>\n','  <span class="brand">OpenCut DSA</span>\n  <div class="swatches" id="swatches" title="Colours"></div>\n')
+rep('</style>','.hstack{display:flex;flex-direction:column;gap:3px}.hstack .hbtn{padding:3px 12px;font-size:11px;line-height:1.2;transform:none}#app>header>.swatches{max-width:215px;flex:0 0 auto;margin-left:6px}\n</style>')
+
+
+# 10q. v6.12: real QR encoder (vendored qrcode-generator, MIT) replaces the old placeholder pattern
+_a = s.index('// Minimal QR encoder (version 1')
+_b = s.index('// === FULLSCREEN ===')
+s = s[:_a] + """// Real QR Code (ISO 18004) via the vendored qrcode-generator library (src/vendor/qrcode.js, MIT). Byte mode, UTF-8, error correction M.
+function qrEncode(text){
+  try{
+    if(typeof qrcode==='undefined')return null;
+    qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
+    var q=qrcode(0,'M');q.addData(text,'Byte');q.make();
+    var n=q.getModuleCount(),m=[];
+    for(var y=0;y<n;y++){m[y]=[];for(var x=0;x<n;x++)m[y][x]=q.isDark(y,x)?1:0;}
+    return m;
+  }catch(e){return null;}
+}
+
+""" + s[_b:]
+# render with a proper 4-module quiet zone and whole-pixel modules
+rep("""  var px=Math.floor(200/size);
+  var c=document.createElement('canvas');c.width=size*px+20;c.height=size*px+20;""","""  var px=Math.max(4,Math.floor(400/(size+8)));
+  var c=document.createElement('canvas');c.width=(size+8)*px;c.height=(size+8)*px;""")
+rep("if(modules[y][x])cx.fillRect(10+x*px,10+y*px,px,px);","if(modules[y][x])cx.fillRect((x+4)*px,(y+4)*px,px,px);")
+
+
+# 10r. v6.13: rotation of images/text, line hit-testing
+rep("function drawTextObject(c,o){\n  var f=o.font","""function drawTextObject(c,o){
+  if(isRot(o)){var _rc=rotCenter(o);c.save();c.translate(_rc.x,_rc.y);c.rotate(rotRad(o));c.translate(-_rc.x,-_rc.y);try{_drawTextObjectBase(c,o);}finally{c.restore();}return;}
+  _drawTextObjectBase(c,o);
+}
+function _drawTextObjectBase(c,o){
+  var f=o.font""")
+rep("else if(o.type==='image'&&o.img&&o.img.complete&&o.img.naturalWidth){ex.drawImage(o.img,o.x,o.y,o.w,o.h);}","else if(o.type==='image'){drawImageObj(ex,o);}")
+rep("else if(o.type==='image'&&o.img&&o.img.complete&&o.img.naturalWidth){ctx.drawImage(o.img,o.x,o.y,o.w,o.h);}","else if(o.type==='image'){drawImageObj(ctx,o);}")
+rep("""    var b=o.type==='text'?textBounds(o):{x:o.x,y:o.y,w:o.w,h:o.h};
+    if(px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h)return i;""","""    if(o.type==='line'){if(distToSeg(px,py,o.x1,o.y1,o.x2,o.y2)<=Math.max((o.strokeW||2)/2+2/zoom,6/zoom))return i;continue;}
+    var b=baseBox(o),q=isRot(o)?unrotPt(o,px,py):[px,py];
+    if(q[0]>=b.x&&q[0]<=b.x+b.w&&q[1]>=b.y&&q[1]<=b.y+b.h)return i;""")
+rep("  if(sel&&selIds.length<2){\n    var sb=sel.type==='text'","  if(sel&&selIds.length<2&&!isRot(sel)){\n    var sb=sel.type==='text'")
+rep("    if(sel&&sel.type==='text'&&!sel.locked){\n      var sb=textBounds(sel),handleRadius","    if(sel&&sel.type==='text'&&!sel.locked&&!isRot(sel)){\n      var sb=textBounds(sel),handleRadius")
+rep("  if(!sel||sel.type!=='text'||sel.locked)return false;\n  var b=textBounds(sel)","  if(!sel||sel.type!=='text'||sel.locked||isRot(sel))return false;\n  var b=textBounds(sel)")
+
+
+# 10s. v6.14: rotation of every shape, Rot field in Transform
+rep("objects.forEach(function(o){if(o.hidden)return;ex.save();ex.globalAlpha=o.alpha||1;","objects.forEach(function(o){if(o.hidden)return;ex.save();rotShapeCtx(ex,o);ex.globalAlpha=o.alpha||1;")
+rep("    if(o.hidden)return;ctx.save();ctx.globalAlpha=o.alpha||1;ctx.fillStyle=(o.pattern","    if(o.hidden)return;ctx.save();rotShapeCtx(ctx,o);ctx.globalAlpha=o.alpha||1;ctx.fillStyle=(o.pattern")
+rep("""<label style="font-size:11px;color:var(--dim);text-align:right">H</label><input type="number" class="ninput" id="tfH" step="0.01" min="0">
+""","""<label style="font-size:11px;color:var(--dim);text-align:right">H</label><input type="number" class="ninput" id="tfH" step="0.01" min="0">
+            <label style="font-size:11px;color:var(--dim);text-align:right" title="Rotation in degrees">Rot</label><input type="number" class="ninput" id="tfR" step="1" title="Rotation in degrees">
+""")
+
 # 11. machine layer markers + title
 rep('</script>\n</body>', '</script>\n<!--@@MACHINE@@-->\n</body>')
 rep('<title>Stick-it-too-Cricut — RICKET MAKER C-137</title>', '<title>OpenCut DSA</title>')

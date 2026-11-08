@@ -1,4 +1,4 @@
-# OpenCut DSA v6.10
+# OpenCut DSA v6.14
 
 A replacement for Cricut Design Space. Read below
 
@@ -9,6 +9,37 @@ v6 cannot cut on a real Maker 3 or any other cricut atm. No public, verified pro
 
 I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS USB AND BLUTOOTH PROTOCOLS SO ITS BEEN DIFFICULT
 
+
+## New in v6.14
+* **Every shape rotates.** Rectangles, circles, stars, polygons and paths now rotate like images and text: select one and drag the round handle above it (Shift = 15 degree steps, double-click the handle = 0). After rotating, the corner handles resize in the shape's own rotated frame. There is also a **Rot** field in the Transform panel (degrees); for a line it turns the line about its middle. Rotation works with undo, PNG export, Print, the Magic Wand, SVG export (a rotate transform) and the cut job (the outline points are rotated).
+* **New Combine panel** (right side, above Layers; it appears when something is selected). It does not change any existing panel.
+  * **Weld**: merges the selected shapes into one outline (the lowest shape sets the colours).
+  * **Subtract**: cuts the shapes above away from the lowest selected shape.
+  * **Intersect**: keeps only the area all selected shapes share.
+  * **Slice**: for exactly two overlapping shapes, splits them into three separate pieces (lower only, shared area, upper only), kept together as a group.
+  * **Offset (in)**: makes an offset copy on top of the selected shapes, positive grows and negative shrinks, with round corners.
+  * **Line to Outline** (shows only when a line is selected): turns a thick line into a real filled outline.
+  * Results are normal shapes (they can be moved, warped, rotated, exported or printed) and one Undo brings the originals back. Text works too (it is combined through its font outlines). Images and open lines cannot be combined. Geometry uses the Clipper library (src/vendor/clipper.js, Boost licence).
+* Still to come from the plan: pen tool and node editing, alignment/distribute and guides, project library, image trace, multi-mat and cut order, Print Then Cut calibration marks. Real cutting and Flatten are not part of this plan yet.
+
+## New in v6.13
+* **Colour palette moved** to sit just left of the PNG / Mat buttons. The space between the OpenCut DSA name and the palette is left empty for future additions.
+* **Line thickness, no new button.** Select a line and two small square handles appear, one on each side of its middle. Drag one away from the line to make it thicker, toward the line to make it thinner (the line itself does not move; one Undo step per drag). A uniform scale of a line (Shift + corner handle, or the same value in W and H) now scales the thickness too; stretching only the length keeps the thickness.
+* **Lines are easier to pick.** Clicking on a line now selects it (the old test was the whole bounding box, which for a flat line was a hairline and for a diagonal line was an empty rectangle).
+* **Rotate images and text.** Select an image or a text object and a round handle appears above its box. Drag it to rotate (hold Shift for 15 degree steps; the angle is shown while dragging), double-click the handle to put it back to 0. After rotating, the image corner handles resize it in its own rotated frame (Shift keeps the proportions) and text keeps its corner font-size handle. Rotation works with undo, save, SVG export (images keep a rotate transform; text outlines are rotated), the cut job, Convert Text to Shapes, PNG export, Print and the Magic Wand. Rectangles, circles, stars, polygons, lines and paths are not rotated by this (they have no rotation field); that is not part of this build.
+
+## New in v6.12
+* **Created and tested on Linux Bazzite** in the **Brave** browser, as well as **Chrome** and **Firefox**.
+* Cut dashboard: the cut button now says **Make Cut**.
+* **New colours: magenta and grey.** Every green highlight is now magenta (selected tool backdrop, tabs, buttons, sliders, selection outlines, the wand tint, the swatch Solid tile). The OpenCut logo and name keep their gradient but are now magenta to silver. Selected tool icons are dark on the magenta backdrop so they stay readable. Green is kept only where it is a real colour: the colour dots, the mat presets and fonts. New shapes now start with a magenta fill (new text is still black).
+* The support (moneybag) button and its pop-up are removed. A support button that points to something you own can be added later.
+* **QR code generator fixed.** It was not a real QR code (it drew a placeholder pattern). It now makes a real QR code (the MIT-licensed qrcode-generator library, error correction M, UTF-8 text) with a proper quiet zone. The tests decode the generated codes and check they read back the exact text.
+* **Shape Warp.** Select a rectangle, circle, polygon, star, line or path and use the new Shape Warp panel (above Layers): a Warp style dropdown (None, Arch, Inverted arch, Bulge, Wave, Slant, Squeeze) and an Amount slider (-100 to 100), like the text warp. The original shape is kept, so choosing None gives back the exact original; undo, move, resize, SVG export, print and the machine layer all work with a warped shape. Lines bend with Arch, Inverted arch, Bulge and Wave (Slant and Squeeze need a shape with height). One object at a time. Images and text are not changed by it (text has its own warp).
+* **Header layout.** The Colors palette (same dots, same look) moved to the top, right of the logo and name. Undo / Redo and PNG / Mat are now compact stacked pairs. Nothing was removed.
+
+## New in v6.11
+* **Print sheet: show cut lines without printing them.** "Print cut lines" is now "Show cut lines around each sticker" plus a second tick box, "Print the cut lines on the paper". Untick the second one and the preview still shows the cut lines and their offset from the image (and Save cut-line SVG still works), but the printed page has no cut lines on it. The offset still moves the sticker the same way, so the printed art matches the SVG.
+* After printing, keyboard focus returns to the app, so Ctrl+P works again straight away.
 
 ## New in v6.10
 * **Print sheet** (Ctrl+P, right-click > Print..., or the Print... button in the Export window). Prints your design to any printer from the browser's own print dialog, at exact paper size (US Letter or A4, drawn at 300 dpi), so stickers come out at real size. Options: printer margin, Size %, shrink to fit, centre or top-left, selected objects only. Choose your printer and print at 100% (no "fit to page") in the browser's dialog.
@@ -68,11 +99,11 @@ I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS 
 * Text becomes cut paths: the export dialog's "Convert text to paths" outlines text with the font file; Convert Text to Shapes turns selected text into an editable compound path object you can move and resize. Curved/warped text effects are outlined as drawn. Needs the actual font file: system fonts are read from the installed font, uploaded fonts from the file.
 * Machine tab "Export Cut Paths (SVG, mm)" now includes text outlines too.
 * exportSVG() is now asynchronous.
-* Swatch library + Bucket tool (B). In the Swatch Library panel (right side, under Colors) click + Add images... and pick any number of image files (png, jpg, gif, webp, svg), or Choose folder... to load a whole folder and its sub-folders (works in Brave, Chrome, Edge and Firefox), or just drag image files onto the panel. They appear immediately and are remembered in this browser (IndexedDB), so there is nothing to run. Pick a swatch, press B, click inside a shape (rectangle, ellipse, star, polygon, text, converted-text shapes, wand outlines). Tile size sets the tile width in inches and also resizes the tiles of the selected filled shapes. Choose Solid to fill with the Fill colour instead; Remove deletes a swatch you added. Fills are saved in projects, survive undo/copy, show in PNG export and are written to SVG as embedded <pattern> fills. (Optional, advanced: a swatches/ folder next to index.html plus python3 tools/make-swatches.py or node tools/make-swatches.js bakes a permanent built-in library; the app does not need it.)
+* Swatch library + Bucket tool (B). In the Swatch Library panel (right side) click + Add images... and pick any number of image files (png, jpg, gif, webp, svg), or Choose folder... to load a whole folder and its sub-folders (works in Brave, Chrome, Edge and Firefox), or just drag image files onto the panel. They appear immediately and are remembered in this browser (IndexedDB), so there is nothing to run. Pick a swatch, press B, click inside a shape (rectangle, ellipse, star, polygon, text, converted-text shapes, wand outlines). Tile size sets the tile width in inches and also resizes the tiles of the selected filled shapes. Choose Solid to fill with the Fill colour instead; Remove deletes a swatch you added. Fills are saved in projects, survive undo/copy, show in PNG export and are written to SVG as embedded <pattern> fills. (Optional, advanced: a swatches/ folder next to index.html plus python3 tools/make-swatches.py or node tools/make-swatches.js bakes a permanent built-in library; the app does not need it.)
 * Magic Wand (W), like Photoshop's with "Sample All Layers". It looks at what you see (every visible object flattened), so it works the same on images, text, shapes and converted text, and it picks individual parts: click one letter, the inside of an "O", one piece of a picture. Click selects the touching pixels of similar colour (Tolerance 0-255, default 32; raise it to include more); marching ants outline the selection. Options: Contiguous on/off, Point/3x3/5x5 sample, New / Add / Subtract / Intersect (or Shift+click = add, Ctrl+click = subtract; Alt+click still pans). Make cut path (or Enter) traces the selection into an editable cut outline (holes kept, optional edge smoothing). Invert flips the selection (click the background, invert, get everything that is drawn). Select subject (selected sticker/clip-art on a plain or transparent background) and Whole object (the selected object's silhouette) are one-click shortcuts. "Only the object under the click" ignores overlapping objects; "Select whole objects instead of regions" gives the old whole-object/same-fill selection. Clicking an empty part of the mat selects the empty background region (as Photoshop does on a transparent layer); press Esc or Clear to drop it.
 * Mat colour (header "Mat" button): presets (dark, charcoal, light gray, white, Cricut green/blue, cream), a custom colour and Reset, so black objects are visible. The grid switches to dark lines on light mats. It is a display setting only: it is remembered in this browser, is not saved in project files and never appears in SVG cut files; PNG export uses it as the background.
 * Undo / Redo buttons in the header (v4 only had Ctrl+Z / Ctrl+Y, with no visible control). They grey out when there is nothing to undo or redo. Ctrl+Shift+Z also redoes. Undo keeps up to 80 steps.
-* Not verified on real Brave/Bazzite: the Local Font Access API (only tested against a mock; see docs/LIMITATIONS.md). If it is unavailable, use Add font file(s); fonts on Bazzite are usually in ~/.local/share/fonts or /usr/share/fonts.
+* If Load system fonts is unavailable in a browser, use Add font file(s); fonts on Bazzite are usually in ~/.local/share/fonts or /usr/share/fonts.
 
 ## What changed from v4 (summary; full list in docs/CHANGES.md)
 
@@ -96,19 +127,19 @@ I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS 
 * The Stage panel shows which of the 8 connectivity stages are real, simulated, or not implemented.
 * Text is exported as outlines when the font file is available; raster images are skipped with a warning.
 
-## Linux access (general guidance, not tested on Bazzite or with a real Cricut)
+## Linux access (developed and tested on Bazzite in Brave, Chrome and Firefox; no real Cricut)
 
 * Use a Chromium-based browser. WebUSB works in Chrome/Chromium/Brave. Web Serial is off by default in Brave: enable brave://flags/#brave-web-serial-api. Firefox supports neither API.
 * Without a udev rule the browser usually gets "permission denied". After you have the vendor/product ID (lsusb, or Copy Diagnostics), generate a rule that grants your logged-in desktop user access without root or group changes: ./tools/make-udev-rule.sh 0xVVVV 0xPPPP prints the rule. To install it: sudo tee /etc/udev/rules.d/70-cricut.rules, then sudo udevadm control --reload && sudo udevadm trigger. It is reversible by deleting that file. On Bazzite /etc is writable and survives updates.
 * If the kernel has bound a driver to the device (for example cdc_acm creating /dev/ttyACM0), WebUSB may be unable to open it; use Web Serial instead. This is a hypothesis to verify with lsusb -v and dmesg.
-* Flatpak browsers sandbox device access; behaviour was not tested. A native or layered install is the simplest first test.
+* Flatpak browsers sandbox device access. A native or layered install is the simplest first test.
 
 ## Tests
 
 ```
 npm install                       # installs Playwright (dev only)
 npx playwright install chromium   # or set CHROMIUM=/path/to/chrome
-npm test                          # 153 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5 + 4 + 3 + 3 + 4
+npm test                          # 173 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5 + 4 + 3 + 3 + 5 + 7 + 6 + 6
 # font tests need DejaVu fonts or FONT_TTF / FONT_BOLD_TTF=/path/to.ttf
 npm run build                     # rebuilds index.html from src/
 ```
@@ -130,13 +161,17 @@ src/fonts.js          system fonts, font upload, text-to-shapes
 src/export-ui.js      Export dialog
 src/undo-ui.js        Undo / Redo header buttons
 src/mat-ui.js         Mat colour picker
-src/theme.css         colour theme overrides
+src/shape-warp.js     Shape Warp panel (v6.12)
+src/header-layout.js  header: palette beside PNG/Mat, stacked Undo/Redo and PNG/Mat (v6.12/v6.13)
+src/transform-handles.js  line thickness handles, rotation handle and Rot field (v6.13/v6.14)
+src/boolops.js        Combine panel: Weld, Subtract, Intersect, Slice, Offset, Line to Outline (v6.14)
+src/theme.css         colour theme overrides (magenta + grey)
 src/maskops.js        wand algorithms (flood fill, outline tracing)
 src/swatches.js       swatch library panel + Bucket tool
 src/wand.js           Magic Wand tool
 swatches/             optional built-in library (see Swatch section)
 fonts/                put fonts-bundle.js here (made by Fonts... > Save fonts to app folder)
-src/vendor/           opentype.js 1.3.4 (MIT, inlined)
+src/vendor/           opentype.js 1.3.4, qrcode-generator 1.4.4 (both MIT) and clipper-lib 6.4.2 (Boost licence), all inlined
 src/machine.js        hardware layer: job preparation, simulator, read-only USB/serial probes
 src/machine-ui.js     Cut tab + Console wiring
 tools/                make-swatches.py/.js, build.js, patch_core.py, serve.sh, make-udev-rule.sh

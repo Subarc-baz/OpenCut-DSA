@@ -32,7 +32,34 @@ function restoreObjects(json){
 function cloneList(list){return restoreObjects(JSON.stringify(list,_noImg));}
 
 /* ---------- geometry helpers ---------- */
-function objBounds(o){return o.type==='text'?textBounds(o):{x:o.x,y:o.y,w:o.w,h:o.h};}
+/* ---------- v6.13: rotation of images and text (o.rot, degrees, about the centre of the unrotated box) ---------- */
+var ROT_TYPES={image:1,text:1,rect:1,ellipse:1,star:1,polygon:1,path:1};
+function canRot(o){return !!o&&!!ROT_TYPES[o.type];}
+function isRot(o){return canRot(o)&&Math.abs(+o.rot||0)>1e-9;}
+/* rotate a canvas about the centre of a shape (rect/ellipse/star/polygon/path); image and text rotate themselves */
+function rotShapeCtx(c,o){if(!isRot(o)||o.type==='image'||o.type==='text')return;var cx=o.x+o.w/2,cy=o.y+o.h/2;c.translate(cx,cy);c.rotate(rotRad(o));c.translate(-cx,-cy);}
+function baseBox(o){return o.type==='text'?textBounds(o):{x:o.x,y:o.y,w:o.w,h:o.h};}
+function rotCenter(o){var b=baseBox(o);return{x:b.x+b.w/2,y:b.y+b.h/2};}
+function rotRad(o){return(+o.rot||0)*Math.PI/180;}
+function rotPt(o,x,y){var c=rotCenter(o),a=rotRad(o),dx=x-c.x,dy=y-c.y;return[c.x+dx*Math.cos(a)-dy*Math.sin(a),c.y+dx*Math.sin(a)+dy*Math.cos(a)];}
+function unrotPt(o,x,y){var c=rotCenter(o),a=-rotRad(o),dx=x-c.x,dy=y-c.y;return[c.x+dx*Math.cos(a)-dy*Math.sin(a),c.y+dx*Math.sin(a)+dy*Math.cos(a)];}
+function rotCorners(o){var b=baseBox(o),cs=[[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h]];return isRot(o)?cs.map(function(p){return rotPt(o,p[0],p[1]);}):cs;}
+function objBounds(o){
+  var b=baseBox(o);if(!isRot(o))return b;
+  var cs=rotCorners(o),x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  cs.forEach(function(p){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);});
+  return{x:x0,y:y0,w:x1-x0,h:y1-y0};
+}
+function drawImageObj(c,o){
+  if(!(o.img&&o.img.complete&&o.img.naturalWidth))return;
+  c.save();
+  if(isRot(o)){var rc=rotCenter(o);c.translate(rc.x,rc.y);c.rotate(rotRad(o));c.translate(-rc.x,-rc.y);}
+  c.drawImage(o.img,o.x,o.y,o.w,o.h);c.restore();
+}
+function distToSeg(px,py,x1,y1,x2,y2){
+  var dx=x2-x1,dy=y2-y1,l2=dx*dx+dy*dy,t=l2>0?((px-x1)*dx+(py-y1)*dy)/l2:0;t=Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(x1+t*dx),py-(y1+t*dy));
+}
 function unionBounds(bs){
   if(!bs.length)return null;
   var x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
@@ -59,7 +86,11 @@ function scaleFont(font,u){
 function scaleObj(o,c,sx,sy,ax,ay){
   var u=Math.sqrt(Math.abs(sx*sy));
   function px(v){return ax+(v-ax)*sx;} function py(v){return ay+(v-ay)*sy;}
-  if(o.type==='ellipse'){
+  if(isRot(c)&&o.type!=='text'&&o.type!=='line'&&o.type!=='star'&&o.type!=='polygon'){   /* a rotated shape/picture scales uniformly about its centre so it stays itself */
+    var rc=rotCenter(c),ncx=px(rc.x),ncy=py(rc.y);o.w=c.w*u;o.h=c.h*u;o.x=ncx-o.w/2;o.y=ncy-o.h/2;
+    if(o.type==='ellipse'){o.cx=ncx;o.cy=ncy;o.rx=c.rx*u;o.ry=c.ry*u;}
+    if(c.cornerR!==undefined)o.cornerR=c.cornerR*u;
+  }else if(o.type==='ellipse'){
     o.cx=px(c.cx);o.cy=py(c.cy);o.rx=c.rx*sx;o.ry=c.ry*sy;
     o.x=o.cx-o.rx;o.y=o.cy-o.ry;o.w=o.rx*2;o.h=o.ry*2;
   }else if(o.type==='star'||o.type==='polygon'){
@@ -67,6 +98,7 @@ function scaleObj(o,c,sx,sy,ax,ay){
     o.cx=px(c.cx);o.cy=py(c.cy);o.r=c.r*u;if(c.ir!==undefined)o.ir=c.ir*u;
     o.x=o.cx-o.r;o.y=o.cy-o.r;o.w=o.h=o.r*2;
   }else if(o.type==='line'){
+    if(c.strokeW&&Math.abs(sx-sy)<1e-6)o.strokeW=Math.max(0.5,c.strokeW*Math.abs(sx));   /* a uniform scale also scales the thickness */
     o.x1=px(c.x1);o.y1=py(c.y1);o.x2=px(c.x2);o.y2=py(c.y2);
     o.x=Math.min(o.x1,o.x2);o.y=Math.min(o.y1,o.y2);o.w=Math.abs(o.x2-o.x1);o.h=Math.abs(o.y2-o.y1);
   }else if(o.type==='text'){
@@ -214,6 +246,7 @@ function _handlePositions(b){return[[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b
 function resizeHandleAt(pt){
   if(!sel||!selIds.length)return -1;
   if(selIds.length===1&&sel.type==='text')return -1;   /* text keeps its own font-size handle */
+  if(selIds.length===1&&isRot(sel))return -1;          /* rotated image/text: handled by transform-handles.js */
   var list=selectedObjects();
   if(list.every(function(o){return o.locked;}))return -1;
   var b=selectionBounds();if(!b)return -1;
@@ -266,7 +299,7 @@ function applyTransformInput(){
 function drawMultiSelection(){
   var list=selectedObjects(),b=selectionBounds();if(!b)return;
   var isGroup=list.length>1&&list.every(function(o){return o.gid&&o.gid===list[0].gid;});
-  var col=isGroup?'#b57bff':'#44ff66';
+  var col=isGroup?'#b57bff':'#ff3fc8';
   ctx.save();
   ctx.lineWidth=1/zoom;ctx.strokeStyle=col;ctx.globalAlpha=0.55;ctx.setLineDash([3/zoom,3/zoom]);
   list.forEach(function(o){var ob=objBounds(o);ctx.strokeRect(ob.x,ob.y,ob.w,ob.h);});
@@ -315,9 +348,9 @@ function drawPathObj(c,o){
   c.beginPath();
   o.contours.forEach(function(ct){
     ct.forEach(function(p,i){var X=o.x+p[0]*fx,Y=o.y+p[1]*fy;if(i)c.lineTo(X,Y);else c.moveTo(X,Y);});
-    c.closePath();
+    if(!o.open)c.closePath();
   });
-  if(o.fill&&o.fill!=='none')c.fill('nonzero');
+  if(!o.open&&o.fill&&o.fill!=='none')c.fill('nonzero');
   if(o.stroke&&o.stroke!=='none'&&(o.strokeW||0)>0)c.stroke();
 }
 /* Keep the text-properties panel in sync with ANY selection change (marquee, group, delete, click on empty canvas). */

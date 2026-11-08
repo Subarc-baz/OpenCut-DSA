@@ -123,7 +123,7 @@
   /* ---------- bucket ---------- */
   function applyFill(o, sid, size) {
     if (sid && byId[sid]) { o.pattern = { sid: sid, size: size }; o.fill = byId[sid].avg || '#888888'; }
-    else { delete o.pattern; var nf = document.getElementById('optNoFill'); o.fill = (nf && nf.checked) ? 'none' : (document.getElementById('optFill') || { value: '#44ff66' }).value; }
+    else { delete o.pattern; var nf = document.getElementById('optNoFill'); o.fill = (nf && nf.checked) ? 'none' : (document.getElementById('optFill') || { value: '#ff3fc8' }).value; }
   }
   window.__toolHandlers.bucket = function (pt) {
     if (window.WandTool && window.WandTool.hasSelection()) { window.WandTool.fillAt(pt); return; }   /* an active wand selection limits the fill to that region */
@@ -145,7 +145,7 @@
   var panel, body;
   function mkPanel() {
     var anchor = document.getElementById('swatches'); if (!anchor) return;
-    var host = anchor.closest('.spanel'); if (!host) return;
+    var host = anchor.closest('.spanel') || document.getElementById('swatchAnchor'); if (!host) return;
     panel = document.createElement('div'); panel.className = 'spanel'; panel.id = 'swatchPanel';
     var head = document.createElement('div'); head.className = 'spanel-head'; head.textContent = 'Swatch Library '; var cnt = document.createElement('span'); cnt.style.fontSize = '9px'; cnt.id = 'swCount'; head.appendChild(cnt);
     body = document.createElement('div'); body.className = 'spanel-body'; panel.appendChild(head); panel.appendChild(body);
@@ -156,7 +156,7 @@
     var fd = document.createElement('input'); fd.type = 'file'; fd.id = 'swFolderInput'; fd.multiple = true; fd.setAttribute('webkitdirectory', ''); fd.setAttribute('directory', ''); fd.style.display = 'none';
     fd.onchange = function () { var items = folderFiles(fd.files); var n = (fd.files || []).length; fd.value = ''; if (items.length) addFiles(items); else { status(0, [n ? 'no usable images in that folder (png jpg gif webp svg)' : 'folder was empty']); } };
     panel.appendChild(fd);
-    panel.addEventListener('dragover', function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0) { e.preventDefault(); e.stopPropagation(); panel.style.outline = '1px dashed #44ff66'; } });
+    panel.addEventListener('dragover', function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0) { e.preventDefault(); e.stopPropagation(); panel.style.outline = '1px dashed #ff3fc8'; } });
     panel.addEventListener('dragleave', function () { panel.style.outline = ''; });
     panel.addEventListener('drop', function (e) { panel.style.outline = ''; var fl = e.dataTransfer && e.dataTransfer.files; if (!fl || !fl.length) return; e.preventDefault(); e.stopPropagation(); addFiles(Array.prototype.slice.call(fl).map(function (f) { return { file: f }; })); });
   }
@@ -166,11 +166,11 @@
     var grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:6px';
     function tile(label, sid, bg) {
       var t = document.createElement('button'); t.type = 'button'; t.className = 'swTile'; t.title = label; t.setAttribute('aria-label', 'Swatch ' + label); t.dataset.sid = sid || '';
-      t.style.cssText = 'aspect-ratio:1;border-radius:6px;cursor:pointer;padding:0;background-size:cover;background-position:center;color:#ddd;font:10px var(--ui);border:2px solid ' + ((state.sid || '') === (sid || '') ? 'var(--portal,#44ff66)' : '#444') + ';' + (bg || '');
+      t.style.cssText = 'aspect-ratio:1;border-radius:6px;cursor:pointer;padding:0;background-size:cover;background-position:center;color:#ddd;font:10px var(--ui);border:2px solid ' + ((state.sid || '') === (sid || '') ? 'var(--portal,#ff3fc8)' : '#444') + ';' + (bg || '');
       t.onclick = function () { state.sid = sid; renderPanel(); if (typeof tool !== 'undefined' && tool !== 'bucket') setTool('bucket'); updateBucketOpts(); };
       return t;
     }
-    var solid = tile('Solid colour (uses the Fill colour)', null, 'background:linear-gradient(135deg,#44ff66,#00c8ff)'); solid.textContent = 'Solid'; grid.appendChild(solid);
+    var solid = tile('Solid colour (uses the Fill colour)', null, 'background:linear-gradient(135deg,#ff3fc8,#9a9ab0)'); solid.textContent = 'Solid'; grid.appendChild(solid);
     LIB.forEach(function (s) { var t = tile(s.name, s.id, ''); t.style.backgroundImage = 'url("' + s.data.replace(/"/g, '') + '")'; grid.appendChild(t); });
     body.appendChild(grid);
     if (!LIB.length) {

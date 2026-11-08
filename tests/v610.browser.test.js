@@ -62,3 +62,19 @@ test('entry points: right-click Print..., the Print button in the Export window;
   await p.evaluate(() => selectMany([2])); await p.keyboard.press('Control+p'); await p.check('#prSel'); await p.waitForTimeout(100); assert.match(await p.textContent('#prInfo'), /1\.04 × 1\.04 in/); assert.equal(await p.evaluate(() => PrintSheet.items().length), 1);
   assert.deepEqual(p.errs, []); await p.ctx.close();
 });
+
+test('cut lines can be shown in the preview and still NOT be printed (offset kept, SVG still saved); ticking prints them', async () => {
+  const p = await open(); await add(p, [RED]); await p.keyboard.press('Control+p');
+  const pink = c => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 80 && d[i + 2] > 100 && d[i + 2] < 220) n++; return n; };
+  assert.equal(await p.locator('#prPL').isChecked(), true);
+  await p.uncheck('#prPL'); await p.waitForTimeout(150);
+  assert.ok(await p.locator('#prPv').evaluate(c => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 120 && d[i + 2] > 100) n++; return n > 20; }), 'preview still draws the cut line');
+  assert.match(await p.textContent('#prInfo'), /1 cut line\(s\), shown here only.*NOT be printed/); assert.equal(await p.locator('#prSvg').isDisabled(), false);
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#prSvg')]); assert.match(fs.readFileSync(await dl.path(), 'utf8'), /<path /);
+  await p.click('#prGo'); await p.waitForFunction(() => window.__lastPrintFrame && window.__lastPrintFrame.contentDocument.getElementById('pg') && window.__lastPrintFrame.contentDocument.getElementById('pg').complete);
+  const printed = await p.evaluate(() => { const i = window.__lastPrintFrame.contentDocument.getElementById('pg'), c = document.createElement('canvas'); c.width = i.naturalWidth; c.height = i.naturalHeight; c.getContext('2d').drawImage(i, 0, 0); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i2 = 0; i2 < d.length; i2 += 4) if (d[i2] > 200 && d[i2 + 1] < 80 && d[i2 + 2] > 100 && d[i2 + 2] < 220) n++; return n; });
+  assert.equal(printed, 0, 'no pink pixels on the printed sheet');
+  await p.keyboard.press('Control+p'); await p.check('#prPL'); await p.click('#prGo'); await p.waitForTimeout(400);
+  const printed2 = await p.evaluate(() => { const i = window.__lastPrintFrame.contentDocument.getElementById('pg'), c = document.createElement('canvas'); c.width = i.naturalWidth; c.height = i.naturalHeight; c.getContext('2d').drawImage(i, 0, 0); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i2 = 0; i2 < d.length; i2 += 4) if (d[i2] > 200 && d[i2 + 1] < 80 && d[i2 + 2] > 100 && d[i2 + 2] < 220) n++; return n; });
+  assert.ok(printed2 > 500, 'pink cut line printed when ticked: ' + printed2); assert.deepEqual(p.errs, []); await p.ctx.close();
+});
