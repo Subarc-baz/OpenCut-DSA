@@ -256,6 +256,28 @@ rep("""<label style="font-size:11px;color:var(--dim);text-align:right">H</label>
             <label style="font-size:11px;color:var(--dim);text-align:right" title="Rotation in degrees">Rot</label><input type="number" class="ninput" id="tfR" step="1" title="Rotation in degrees">
 """)
 
+
+# 10t. v6.15: magenta -> maroon (fill defaults stay a true maroon, UI accents use a lighter rose-maroon so they read on the dark panels)
+for _a,_b in [('id="optFill" value="#ff3fc8"','id="optFill" value="#9c2342"'),("f==='#ff3fc8'?'#000000':f","f==='#9c2342'?'#000000':f")]:
+    rep(_a,_b)
+_lines = s.split('\n')
+for _i, _l in enumerate(_lines):
+    if "var colors=['" in _l or 'LOGO_URI=' in _l or 'rel="icon"' in _l: continue
+    _l = _l.replace('--portal:#ff3fc8;--acid:#ff8ae6;','--portal:#d9506f;--acid:#f0a8bb;')
+    _l = _l.replace('#ff3fc8','#d9506f').replace('#ff8ae6','#f0a8bb').replace('rgba(255,63,200','rgba(217,80,111')
+    _lines[_i] = _l
+s = '\n'.join(_lines)
+
+
+# 10u. v6.15: pen tool button, node-edit selection box, open-path hit-testing
+rep("{id:'line',icon:'\\u2572',key:'L'},","{id:'line',icon:'\\u2572',key:'L'},{id:'pen',icon:'\\u2712',key:'N',svg:'<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 19l7-7 3 3-7 7z\"/><path d=\"M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z\"/><path d=\"M2 2l7.6 7.6\"/><circle cx=\"11\" cy=\"11\" r=\"2\"/></svg>'},")
+rep("  if(sel&&selIds.length<2&&!isRot(sel)){\n    var sb=sel.type==='text'","  if(sel&&selIds.length<2&&!isRot(sel)&&!window.__nodeEdit){\n    var sb=sel.type==='text'")
+rep("    if(o.type==='line'){if(distToSeg(px,py,o.x1,o.y1,o.x2,o.y2)<=Math.max((o.strokeW||2)/2+2/zoom,6/zoom))return i;continue;}","""    if(o.type==='line'){if(distToSeg(px,py,o.x1,o.y1,o.x2,o.y2)<=Math.max((o.strokeW||2)/2+2/zoom,6/zoom))return i;continue;}
+    if(o.type==='path'&&o.open&&o.contours){var _fx=o.w/(o.bw||1),_fy=o.h/(o.bh||1),_tol=Math.max((o.strokeW||2)/2+2/zoom,6/zoom),_hit=false;
+      o.contours.forEach(function(ct){for(var _k=1;_k<ct.length&&!_hit;_k++){if(distToSeg(px,py,o.x+ct[_k-1][0]*_fx,o.y+ct[_k-1][1]*_fy,o.x+ct[_k][0]*_fx,o.y+ct[_k][1]*_fy)<=_tol)_hit=true;}});
+      if(_hit)return i;continue;}""")
+rep("['B','Bucket (fill with colour or swatch)'],","['N','Pen tool (points and curves; double-click a shape to edit its points)'],['B','Bucket (fill with colour or swatch)'],")
+
 # 11. machine layer markers + title
 rep('</script>\n</body>', '</script>\n<!--@@MACHINE@@-->\n</body>')
 rep('<title>Stick-it-too-Cricut — RICKET MAKER C-137</title>', '<title>OpenCut DSA</title>')

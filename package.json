@@ -1,6 +1,6 @@
 {
   "name": "opencut-dsa",
-  "version": "6.14.0",
+  "version": "6.15.0",
   "private": true,
   "description": "OpenCut DSA: single-file cutting-design editor (design space alternative) with SVG export, fonts, swatches, bucket, magic wand",
   "scripts": {

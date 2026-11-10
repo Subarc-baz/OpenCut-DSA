@@ -87,3 +87,10 @@ See "What would unblock real cutting" in `RESEARCH.md`: capture the official sof
 * A rotated shape's selection box and its marquee selection use the rotated box; an ellipse's box is its rectangle, not the exact curve.
 * Subtract always subtracts from the lowest selected shape; Slice needs exactly two shapes. Open lines and images cannot be combined (convert a line with Line to Outline first).
 * Rotated shapes scale uniformly when scaled together with other objects.
+
+## v6.15 additions
+* Node editing keeps one level of detail: traced or wand paths turn into corner points on every outline vertex, so they can have hundreds of points. Text must be converted to shapes first (Fonts window / Convert Text to Shapes) before its points can be edited.
+* Entering point editing on a rotated shape bakes the rotation into the points (the Rot field then reads 0), and on a warped shape it bakes the warp (the None option no longer restores the original).
+* Rounded rectangles keep a circular corner when converted to points; changing Corner Radius afterwards no longer applies.
+* Pen paths with more than one open sub-path are treated as closed; the pen tool itself makes one sub-path at a time.
+* No guides or smart snapping yet (grid snap only).

@@ -1,4 +1,4 @@
-# OpenCut DSA v6.14
+# OpenCut DSA v6.15
 
 A replacement for Cricut Design Space. Read below
 
@@ -9,6 +9,14 @@ v6 cannot cut on a real Maker 3 or any other cricut atm. No public, verified pro
 
 I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS USB AND BLUTOOTH PROTOCOLS SO ITS BEEN DIFFICULT
 
+
+## New in v6.15
+* **New colour: maroon.** The bright magenta is gone. Buttons and the selected tool use a maroon gradient with white text/icons; text accents, outlines and handles use a lighter rose-maroon so they stay readable on the dark panels. The logo and the OpenCut DSA name keep their gradient (maroon-rose to light rose to silver). New shapes now start maroon (new text is still black).
+* **Pen tool** (new button under the line tool, key **N**): click = corner point, click-and-drag = smooth curve point with handles, click the first point = close the shape, Enter or double-click = finish an open path, Backspace = remove the last point, Esc = finish. Closed shapes take the current Fill; open paths have no fill and use the Stroke colour and width.
+* **Node editing**: double-click a rectangle, circle, star, polygon, line or path with the Select tool to edit its points. Drag points and handles, **Alt+click** a point to switch smooth/corner, **double-click the outline** to add a point, **Delete** removes the selected point, **Esc** (or clicking away) finishes. A circle becomes four smooth points, a rounded rectangle keeps its corners, a rotated shape keeps its look (its rotation is baked into the points). Pen shapes are normal paths, so Warp, Combine, Offset, rotation, SVG export, Print and the cut job all work on them. One Undo step per change.
+* **Open paths** can now be clicked on the line itself (the old test used the bounding box).
+* **Arrange panel** (appears with two or more objects selected, above Layers): align left / centre / right / top / middle / bottom to each other, and space three or more objects evenly across or down. Groups move as one unit. The existing Align to Mat buttons are unchanged.
+* Still to come: guides and smart snapping, project library, shortcuts panel and accessibility pass, image trace, multi-mat and cut order, Print Then Cut calibration marks.
 
 ## New in v6.14
 * **Every shape rotates.** Rectangles, circles, stars, polygons and paths now rotate like images and text: select one and drag the round handle above it (Shift = 15 degree steps, double-click the handle = 0). After rotating, the corner handles resize in the shape's own rotated frame. There is also a **Rot** field in the Transform panel (degrees); for a line it turns the line about its middle. Rotation works with undo, PNG export, Print, the Magic Wand, SVG export (a rotate transform) and the cut job (the outline points are rotated).
@@ -139,7 +147,7 @@ I AM WORKING ON MAKING THIS WORK, BUT CRICUT IS A SH1T COMPANY AND ENCRYPTS ITS 
 ```
 npm install                       # installs Playwright (dev only)
 npx playwright install chromium   # or set CHROMIUM=/path/to/chrome
-npm test                          # 173 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5 + 4 + 3 + 3 + 5 + 7 + 6 + 6
+npm test                          # 179 tests: unit 22 + 17 + 12, real-browser 20 + 20 + 2 + 4 + 22 + 7 + 8 + 5 + 4 + 3 + 3 + 5 + 7 + 6 + 6 + 6
 # font tests need DejaVu fonts or FONT_TTF / FONT_BOLD_TTF=/path/to.ttf
 npm run build                     # rebuilds index.html from src/
 ```
@@ -164,8 +172,10 @@ src/mat-ui.js         Mat colour picker
 src/shape-warp.js     Shape Warp panel (v6.12)
 src/header-layout.js  header: palette beside PNG/Mat, stacked Undo/Redo and PNG/Mat (v6.12/v6.13)
 src/transform-handles.js  line thickness handles, rotation handle and Rot field (v6.13/v6.14)
+src/pen.js            Pen tool and node editing (v6.15)
+src/arrange.js        Arrange panel: align to each other, space evenly (v6.15)
 src/boolops.js        Combine panel: Weld, Subtract, Intersect, Slice, Offset, Line to Outline (v6.14)
-src/theme.css         colour theme overrides (magenta + grey)
+src/theme.css         colour theme overrides (maroon + grey)
 src/maskops.js        wand algorithms (flood fill, outline tracing)
 src/swatches.js       swatch library panel + Bucket tool
 src/wand.js           Magic Wand tool

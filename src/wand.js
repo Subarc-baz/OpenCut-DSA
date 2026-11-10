@@ -124,7 +124,7 @@
      "Fill in new layer" (fillSelectionAsLayer) keeps the old behaviour of putting a new filled shape on top. */
   function hasSelection() { if (S && stale()) { S = null; draw(); } return !!S; }
   function pickStyle(color) {
-    var t = {}; if (color) t.fill = color; else if (window.SwatchLib) window.SwatchLib.applyFill(t, window.SwatchLib.state.sid, window.SwatchLib.state.size); else t.fill = '#ff3fc8';
+    var t = {}; if (color) t.fill = color; else if (window.SwatchLib) window.SwatchLib.applyFill(t, window.SwatchLib.state.sid, window.SwatchLib.state.size); else t.fill = '#9c2342';
     if (t.fill === 'none') { toast('Fill is set to None. Untick None next to Fill to paint the selection.'); return null; }
     return t;
   }
@@ -243,7 +243,7 @@
     var inv = 1 / S.scale, lw = 1 / zoom;
     ctx.save(); ctx.translate(panX, panY); ctx.scale(zoom, zoom);
     ctx.beginPath(); S.loops.forEach(function (L) { L.forEach(function (p, i) { var X = S.ox + p[0] * inv, Y = S.oy + p[1] * inv; if (i) ctx.lineTo(X, Y); else ctx.moveTo(X, Y); }); ctx.closePath(); });
-    ctx.fillStyle = 'rgba(255,63,200,0.16)'; ctx.fill('nonzero');
+    ctx.fillStyle = 'rgba(217,80,111,0.16)'; ctx.fill('nonzero');
     ctx.lineWidth = lw * 1.5; ctx.setLineDash([]); ctx.strokeStyle = '#fff'; ctx.stroke();
     ctx.setLineDash([5 * lw, 5 * lw]); ctx.lineDashOffset = -dash * lw; ctx.strokeStyle = '#000'; ctx.stroke();
     ctx.restore();

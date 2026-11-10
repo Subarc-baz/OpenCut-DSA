@@ -18,7 +18,7 @@
     pop = document.createElement('div'); pop.id = 'matPopover';
     var r = b.getBoundingClientRect();
     pop.style.cssText = 'position:fixed;z-index:9999;top:' + (r.bottom + 6) + 'px;left:' + Math.max(8, Math.min(r.left, innerWidth - 236)) + 'px;width:220px;background:#12122a;border:1px solid #2c2c55;border-radius:8px;padding:10px;box-shadow:0 8px 24px #000a;color:#ddd;font-size:12px';
-    var t = document.createElement('div'); t.textContent = 'Mat colour (display only)'; t.style.cssText = 'margin-bottom:8px;color:#ff3fc8;font-weight:600'; pop.appendChild(t);
+    var t = document.createElement('div'); t.textContent = 'Mat colour (display only)'; t.style.cssText = 'margin-bottom:8px;color:#d9506f;font-weight:600'; pop.appendChild(t);
     var g = document.createElement('div'); g.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px'; pop.appendChild(g);
     PRESETS.forEach(function (p) {
       var s = document.createElement('button'); s.type = 'button'; s.title = p[0]; s.setAttribute('aria-label', 'Mat colour ' + p[0]); s.dataset.color = p[1];

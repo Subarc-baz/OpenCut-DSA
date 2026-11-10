@@ -61,3 +61,6 @@ Running the v5 browser suite against the original fails all 13 editor tests. Tha
 
 ## v6.14 notes
 `tests/v614.browser.test.js` (6 tests): rotation of every shape type (pixels, bounds, hit-test, SVG rotate transform, cut-job geometry, Rot field, line turn), rotation handle on each shape and rotated-frame corner resize, Weld/Subtract/Intersect/Slice areas checked against the exact expected values with undo, rotated shapes welding in their rotated place, Offset distances to within 0.5 px and the too-large-shrink message, Line to Outline geometry and undo.
+
+## v6.15 notes
+`tests/v615.browser.test.js` (6 tests): maroon theme (no magenta in computed styles, maroon gradient + white icon on the selected tool, logo recoloured, white text on the cut buttons), Pen tool corner points and closing, smooth points with handles and open paths via Enter (flattening, clicking on the curve, undo/redo), node editing (drag a corner, add a point, Alt smooth, Delete, Esc, undo back to the rectangle), a circle converting to four smooth points that stay round to 0.6 px and a rotated rectangle keeping its bounds, and the Arrange panel (align, even spacing, groups, undo).

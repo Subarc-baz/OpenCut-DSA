@@ -38,7 +38,7 @@
     return selIds.map(function (id) { return objects.find(function (o) { return o.id === id; }); }).filter(Boolean).sort(function (a, b) { return objects.indexOf(a) - objects.indexOf(b); });
   }
   function styleFrom(b, name) {
-    var o = { name: name + (b.name ? ': ' + String(b.name).slice(0, 12) : ''), fill: b.fill || '#ff3fc8', stroke: b.stroke || '#ffffff', strokeW: b.strokeW == null ? 2 : b.strokeW, alpha: b.alpha == null ? 1 : b.alpha };
+    var o = { name: name + (b.name ? ': ' + String(b.name).slice(0, 12) : ''), fill: b.fill || '#9c2342', stroke: b.stroke || '#ffffff', strokeW: b.strokeW == null ? 2 : b.strokeW, alpha: b.alpha == null ? 1 : b.alpha };
     if (b.pattern) o.pattern = b.pattern; return o;
   }
   function makePath(sol, style) {

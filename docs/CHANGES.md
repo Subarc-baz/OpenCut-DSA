@@ -112,3 +112,10 @@ Text tool, text effects, game, donate dialog, materials list, minimap, webcam/QR
 * `transform-handles.js`: rotation handle and rotated-corner resize for all those types (ellipse/star/polygon/rect fields kept in sync), numeric `Rot` field (a line is rotated by moving its end points).
 * `src/boolops.js` + vendored `src/vendor/clipper.js` (clipper-lib 6.4.2): integer geometry (x100), pairwise union/difference/intersection with non-zero fill, `ClipperOffset` (round joins) for Offset and open-butt offset for Line to Outline. Results become `path` objects via `TextPaths.makePathGeometry`. `ShapeWarp.outline/densify` are reused to flatten shapes; rotation is baked in.
 * `tests/v614.browser.test.js` (6 tests).
+
+# v6.15
+* Colours: patch step 10t + `src/theme.css` + one-time edits in `src/*.js`/`tools/logo.svg`. Accent `#d9506f` (`--portal`), light `#f0a8bb` (`--acid`), fill default `#9c2342`, button/selected gradient `--maroon2 #b3304f` to `--maroon #8a1c38` with white text.
+* `src/pen.js`: Pen tool (`window.__toolHandlers.pen`, key N, `TOOLS` entry from patch step 10u) and node editing. Data: `o.pen = [{c, n:[{x,y,ix,iy,ox,oy,sm}]}]` in the same frame as `o.contours`; every edit calls `rebuild()` which re-flattens the beziers, recomputes x/y/w/h/bw/bh and the contours. Entering node mode converts the shape in place (`convertInPlace`, rotation baked, warp source dropped).
+* Patch step 10u also: open-path hit-testing by distance, selection box suppressed while `window.__nodeEdit`, `N` in the shortcut list. `transform-handles.js` ignores the selection while editing points.
+* `src/arrange.js`: Arrange panel (align to each other, distribute, groups as units).
+* `tests/v615.browser.test.js` (6 tests).

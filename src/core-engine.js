@@ -299,7 +299,7 @@ function applyTransformInput(){
 function drawMultiSelection(){
   var list=selectedObjects(),b=selectionBounds();if(!b)return;
   var isGroup=list.length>1&&list.every(function(o){return o.gid&&o.gid===list[0].gid;});
-  var col=isGroup?'#b57bff':'#ff3fc8';
+  var col=isGroup?'#b57bff':'#d9506f';
   ctx.save();
   ctx.lineWidth=1/zoom;ctx.strokeStyle=col;ctx.globalAlpha=0.55;ctx.setLineDash([3/zoom,3/zoom]);
   list.forEach(function(o){var ob=objBounds(o);ctx.strokeRect(ob.x,ob.y,ob.w,ob.h);});

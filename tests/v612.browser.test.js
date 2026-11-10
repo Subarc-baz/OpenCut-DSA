@@ -32,15 +32,15 @@ test('theme: no green accents remain in the app chrome (palette dots / mat / fon
   const greens = bad.filter(b => isGreen(b[2])); assert.deepEqual(greens, [], 'green UI colours: ' + JSON.stringify(greens.slice(0, 5)));
   await p.keyboard.press('r'); await p.waitForTimeout(500);
   const on = await p.evaluate(() => { const b = document.querySelector('.tbtn.on'); const cs = getComputedStyle(b); return { bg: cs.backgroundImage, fg: cs.color }; });
-  assert.ok(/255, 63, 200|255, 138, 230/.test(on.bg), 'selected tool has a magenta backdrop: ' + on.bg);
+  assert.ok(/179, 48, 79|138, 28, 56/.test(on.bg), 'selected tool has a maroon backdrop: ' + on.bg);
   const lum = c => { const m = c.match(/\d+/g).map(Number); return (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255; };
-  assert.ok(lum(on.fg) < 0.2, 'icon colour is dark on the magenta backdrop (legible): ' + on.fg);
-  const logo = await p.evaluate(() => decodeURIComponent(LOGO_URI)); assert.ok(!/44ff66|b5ff3b/i.test(logo) && /ff3fc8/i.test(logo), 'logo recoloured');
+  assert.ok(lum(on.fg) > 0.9, 'icon colour is light on the maroon backdrop (legible): ' + on.fg);
+  const logo = await p.evaluate(() => decodeURIComponent(LOGO_URI)); assert.ok(!/44ff66|b5ff3b/i.test(logo) && /c23a5c/i.test(logo), 'logo recoloured');
   assert.deepEqual(p.errs, []); await p.ctx.close();
 });
 
 test('new shapes default to magenta fill; new text stays black', async () => {
-  const p = await open(); assert.equal((await p.inputValue('#optFill')).toLowerCase(), '#ff3fc8'); await p.ctx.close();
+  const p = await open(); assert.equal((await p.inputValue('#optFill')).toLowerCase(), '#9c2342'); await p.ctx.close();
 });
 
 test('QR generator produces a REAL QR code: decodes back to the text (ASCII and UTF-8)', async () => {

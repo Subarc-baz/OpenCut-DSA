@@ -1,27 +1,30 @@
-/* OpenCut DSA theme (v6.12): magenta + grey. Neutral graphite greys around the dark right-hand Tool Options panel (unchanged), magenta accents. */
-:root { --ws1:#50505e; --ws2:#34343f; --chrome:#2c2c36; --chrome2:#383844; --chrome-line:#5a5a6c; --icon:#efeff6; --icon-dim:#c0c0d0; --mag:#ff3fc8; --mag2:#ff8ae6; --mag-ink:#2a0420; }
+/* OpenCut DSA theme (v6.15): maroon + grey. Neutral graphite greys around the dark right-hand Tool Options panel (unchanged), maroon accents. */
+:root { --ws1:#50505e; --ws2:#34343f; --chrome:#2c2c36; --chrome2:#383844; --chrome-line:#5a5a6c; --icon:#efeff6; --icon-dim:#c0c0d0; --mag:#d9506f; --mag2:#f0a8bb; --mag-ink:#ffffff; --maroon:#8a1c38; --maroon2:#b3304f; }
 .workspace { background: radial-gradient(ellipse at 50% 40%, var(--ws1) 0%, var(--ws2) 100%); }
 header { background: linear-gradient(90deg, #26262f 0%, #34343f 50%, #26262f 100%); border-bottom-color: var(--chrome-line); }
 footer { background: var(--chrome); border-top-color: var(--chrome-line); color: var(--icon-dim); }
 .tab-rail { background: var(--chrome); border-right-color: var(--chrome-line); }
 .vtab { color: var(--icon); }
 .vtab:hover { background: rgba(255,255,255,.14); color: #fff; }
-.vtab.on { color: #2a0420; }
+.vtab.on { color: #fff; }
 .ftoolbar { background: rgba(56,56,68,.97); border-color: var(--chrome-line); box-shadow: 0 10px 30px rgba(8,8,16,.45), inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter: none; }
 .tbtn { color: var(--icon); width: 38px; height: 38px; font-size: 18px; }
 .tbtn svg { stroke-width: 2; }
 .tbtn:hover { background: rgba(255,255,255,.16); color: #fff; }
-.tbtn.on { color: #2a0420; background: linear-gradient(135deg,#ff8ae6,#ff3fc8); box-shadow: 0 0 14px rgba(255,63,200,.45); }
+.tbtn.on { color: #fff; background: linear-gradient(135deg,var(--maroon2),var(--maroon)); box-shadow: 0 0 14px rgba(179,48,79,.5); }
 .tsep { background: var(--chrome-line); }
 .rpanel-toggle { background: var(--chrome2); border-color: var(--chrome-line); color: var(--icon); }
 #wandBar { position: absolute; top: 32px; left: 50%; transform: translateX(-50%); z-index: 85; display: none; gap: 4px; align-items: center; padding: 5px 6px; border-radius: 10px; background: rgba(40,40,52,.96); border: 1px solid var(--chrome-line); box-shadow: 0 8px 24px rgba(6,6,14,.45); }
 #wandBar .wb { padding: 5px 10px; border-radius: 7px; border: 1px solid transparent; background: rgba(255,255,255,.07); color: var(--icon); font: 600 11px var(--ui); cursor: pointer; white-space: nowrap; }
 #wandBar .wb:hover:not(:disabled) { background: rgba(255,255,255,.18); color: #fff; }
-#wandBar .wb.on { background: linear-gradient(135deg,#ff3fc8,#ff8ae6); color: #2a0420; }
+#wandBar .wb.on { background: linear-gradient(135deg,var(--maroon2),var(--maroon)); color: #fff; }
 #wandBar .wb:disabled { opacity: .4; cursor: default; }
 #wandBar .wsep { width: 1px; height: 18px; background: var(--chrome-line); margin: 0 3px; }
 
 /* v6.12 brand: same gradient treatment as before, now magenta to silver */
-.brand { background: linear-gradient(90deg,#ff3fc8,#ff8ae6,#d4d4e0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.logo { filter: drop-shadow(0 0 12px rgba(255,63,200,.35)); }
-.vtab.on { background: linear-gradient(135deg,#ff8ae6,#ff3fc8); }
+.brand { background: linear-gradient(90deg,#d9506f,#f0a8bb,#d4d4e0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.logo { filter: drop-shadow(0 0 12px rgba(217,80,111,.35)); }
+.vtab.on { background: linear-gradient(135deg,var(--maroon2),var(--maroon)); }
+.hbtn.cut, .mbtn.go { background: linear-gradient(135deg,var(--maroon2),var(--maroon)) !important; color: #fff !important; }
+.hbtn.cut:hover, .mbtn.go:hover { box-shadow: 0 0 24px rgba(179,48,79,.6) !important; }
+.rpanel-toggle:hover { background: var(--maroon2); color: #fff; }

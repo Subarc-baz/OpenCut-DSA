@@ -88,7 +88,7 @@
   /* ---------- dialog ---------- */
   var st = document.createElement('style');
   st.textContent = '#prDlg{position:fixed;inset:0;z-index:10000;background:rgba(6,10,24,.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}#prDlg .box{background:var(--bg3,#12122a);border:1px solid var(--bdr2,#2c2c55);border-radius:14px;padding:18px;width:640px;max-width:96vw;max-height:94vh;overflow:auto;color:var(--txt,#e4eaf8);font:13px var(--ui,system-ui,sans-serif);display:flex;gap:16px;flex-wrap:wrap}'
-    + '#prDlg h3{margin:0 0 8px;color:var(--portal,#ff3fc8);font-size:16px}#prDlg .col{flex:1;min-width:240px}#prDlg label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}#prDlg label.ck{justify-content:flex-start}'
+    + '#prDlg h3{margin:0 0 8px;color:var(--portal,#d9506f);font-size:16px}#prDlg .col{flex:1;min-width:240px}#prDlg label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}#prDlg label.ck{justify-content:flex-start}'
     + '#prDlg input[type=number],#prDlg select{width:90px;padding:4px;background:#1c1c3a;border:1px solid #3a3a6a;color:#fff;border-radius:6px}#prDlg select{width:150px}#prDlg .info{margin:8px 0;color:#9a9ab8;min-height:3em;font-size:12px;line-height:1.45}#prDlg .warn{color:#ffb454}'
     + '#prDlg .pv{background:#e9ecf3;border-radius:6px;padding:6px;text-align:center}#prDlg canvas{max-width:100%;box-shadow:0 2px 10px rgba(0,0,0,.4);background:#fff}#prDlg .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}';
   document.head.appendChild(st);
